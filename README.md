@@ -126,7 +126,7 @@ npm install
 - ☁️ [Azure Architecture]()
 - 📊 [Expected Results]()
 - 🔮 [Future Work]()
-- 📋 [Mid-Term Report]()
+- 📋 [Mid-Term Report](MidProjectReport_sec_49.docx)
 
 ---
 
