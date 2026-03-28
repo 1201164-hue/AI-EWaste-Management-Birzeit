@@ -248,11 +248,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Team Members:
 - **Osama Aabed**
-  - Email: osama.aabed@students.birzeit.edu
+  - Email: 1201164@students.birzeit.edu
   - Student ID: 1201164
 
 - **Arkan Jayyousi**
-  - Email: arkan.jayyousi@students.birzeit.edu
+  - Email: 1163018@students.birzeit.edu
   - Student ID: 1163018
 
 ### Supervisor:
