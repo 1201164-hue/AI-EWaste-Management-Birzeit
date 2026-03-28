@@ -122,7 +122,7 @@ npm install
 
 ## 📚 Documentation
 
-- 📄 [Final Report]()
+- 📄 [Final Report](ENCS5300-Section49-Report.pdf.pdf)
 - ☁️ [Azure Architecture]()
 - 📊 [Expected Results]()
 - 🔮 [Future Work]()
