@@ -45,7 +45,6 @@ An intelligent e-waste management system leveraging artificial intelligence and 
 - **Frontend:** React web application
 - **Backend:** Flask REST API (Python)
 - **Database:** Azure SQL Database
-- **IoT:** RFID sensors, weight sensors, GPS trackers
 
 ---
 
@@ -161,12 +160,7 @@ npm install
 - Tailwind CSS
 - Axios
 
-### IoT & Hardware
-- ESP32 microcontrollers
-- RFID readers
-- Weight sensors
-- GPS modules
-- MQTT protocol
+
 
 ### DevOps
 - Azure DevOps
@@ -264,7 +258,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📖 Citation
 
-If you use this work in your research, please cite:
 
 ```bibtex
 @mastersthesis{aabed2026ewaste,
@@ -305,6 +298,5 @@ If you use this work in your research, please cite:
 
 ---
 
-**Made with ❤️ in Palestine 🇵🇸**
 
 **© 2026 Birzeit University - All Rights Reserved**
