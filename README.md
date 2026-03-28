@@ -122,11 +122,11 @@ npm install
 
 ## 📚 Documentation
 
-- 📄 [Final Report](docs/reports/Final_Report.pdf)
-- ☁️ [Azure Architecture](docs/architecture/Azure_Architecture_Section.docx)
-- 📊 [Expected Results](docs/reports/Chapter4_ExpectedResults.docx)
-- 🔮 [Future Work](docs/reports/Chapter5_Conclusion_FutureWork.docx)
-- 📋 [Mid-Term Report](docs/reports/MidTerm_Report.pdf)
+- 📄 [Final Report]()
+- ☁️ [Azure Architecture]()
+- 📊 [Expected Results]()
+- 🔮 [Future Work]()
+- 📋 [Mid-Term Report]()
 
 ---
 
