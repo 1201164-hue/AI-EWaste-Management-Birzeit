@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart E-Waste Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2C5F2D;
+            --secondary: #97BC62;
+            --accent: #F5F5F5;
+            --dark: #1E3A1F;
+            --warning: #D32F2F;
+            --success: #4CAF50;
+            --text: #212121;
+            --light-text: #FFFFFF;
+        }
+
+        html, body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8f5e9 100%);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--dark) 100%);
+            color: var(--light-text);
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(44, 95, 45, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            letter-spacing: -1px;
+        }
+
+        .logo span {
+            color: var(--secondary);
+        }
+
+        nav {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        nav a {
+            color: var(--light-text);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        nav a:hover {
+            color: var(--secondary);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-button {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-button:hover {
+            color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--dark);
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        /* Form Styles */
+        .form-section {
+            background: var(--light-text);
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            margin-bottom: 3rem;
+        }
+
+        .form-title {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        input, select, textarea {
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(44, 95, 45, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* File Upload */
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .file-upload-label {
+            display: block;
+            padding: 1rem;
+            background: linear-gradient(135deg, rgba(44, 95, 45, 0.1), rgba(151, 188, 98, 0.1));
+            border: 2px dashed var(--primary);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload-label:hover {
+            background: linear-gradient(135deg, rgba(44, 95, 45, 0.2), rgba(151, 188, 98, 0.2));
+            border-color: var(--dark);
+        }
+
+        .preview-image {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Buttons */
+        button {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--dark));
+            color: var(--light-text);
+            box-shadow: 0 10px 30px rgba(44, 95, 45, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(44, 95, 45, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            background: #7da64a;
+            transform: translateY(-3px);
+        }
+
+        /* Results */
+        .result-section {
+            display: none;
+            margin-top: 2rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(44, 95, 45, 0.05), rgba(151, 188, 98, 0.05));
+            border-radius: 8px;
+            border-left: 5px solid var(--primary);
+        }
+
+        .result-section.show {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .result-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            font-size: 1.1rem;
+            color: var(--dark);
+            padding: 1rem;
+            background: var(--light-text);
+            border-radius: 6px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .recommendation {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .recommendation.reuse {
+            background: #c8e6c9;
+            color: #1b5e20;
+        }
+
+        .recommendation.recycle {
+            background: #ffecb3;
+            color: #f57f17;
+        }
+
+        .recommendation.resell {
+            background: #b3e5fc;
+            color: #01579b;
+        }
+
+        /* Database Table */
+        .table-container {
+            overflow-x: auto;
+            background: var(--light-text);
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            padding: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--primary), var(--dark));
+            color: var(--light-text);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tbody tr:hover {
+            background: rgba(44, 95, 45, 0.05);
+        }
+
+        .barcode {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* Search */
+        .search-container {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        /* Stats Cards */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: var(--light-text);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            border-left: 5px solid var(--primary);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--dark);
+            opacity: 0.7;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--primary);
+            color: var(--light-text);
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo">E-<span>Waste</span> Manager</div>
+            <nav>
+                <a onclick="switchTab('dashboard')">Dashboard</a>
+                <a onclick="switchTab('barcode')">Barcode Scan</a>
+                <a onclick="switchTab('photo')">Photo Upload</a>
+                <a onclick="switchTab('database')">Database</a>
+                <a onclick="switchTab('classifier')">Classifier</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1>Smart E-Waste Management System</h1>
+            <p>AI-powered classification, barcode scanning, and photo recognition</p>
+        </section>
+
+        <!-- DASHBOARD TAB -->
+        <div id="dashboard" class="tab-content active">
+            <section class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalDevices">0</div>
+                    <div class="stat-label">Total Devices</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalValue">$0</div>
+                    <div class="stat-label">Total Component Value</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="avgAge">0</div>
+                    <div class="stat-label">Average Age (Years)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="reuseCount">0</div>
+                    <div class="stat-label">Can Reuse</div>
+                </div>
+            </section>
+        </div>
+
+        <!-- BARCODE SCAN TAB -->
+        <div id="barcode" class="tab-content">
+            <section class="form-section">
+                <h2 class="form-title">📱 Barcode Scanner</h2>
+                <div class="input-group">
+                    <div class="form-field">
+                        <label>Scan or Enter Barcode:</label>
+                        <input type="text" id="barcodeInput" placeholder="Point camera at barcode or type barcode number" autofocus>
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="scanBarcode()">Search Device</button>
+                
+                <div class="result-section" id="barcodeResult">
+                    <div class="result-item">
+                        <div class="result-label">Device Found:</div>
+                        <div class="result-value" id="barcodeDevice"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Model:</div>
+                        <div class="result-value" id="barcodeModel"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Purchase Date:</div>
+                        <div class="result-value" id="barcodePurchaseDate"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Original Price:</div>
+                        <div class="result-value" id="barcodePrice"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Age:</div>
+                        <div class="result-value" id="barcodeAge"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Recommendation:</div>
+                        <div id="barcodeRecommendation" class="recommendation"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- PHOTO UPLOAD TAB -->
+        <div id="photo" class="tab-content">
+            <section class="form-section">
+                <h2 class="form-title">📷 Photo Upload & Recognition</h2>
+                <div class="input-group">
+                    <div class="form-field">
+                        <label>Upload Device Photo:</label>
+                        <div class="file-upload">
+                            <input type="file" id="photoInput" accept="image/*" onchange="handlePhotoUpload()">
+                            <label for="photoInput" class="file-upload-label">
+                                📸 Click to upload or drag & drop<br/>
+                                <small>PNG, JPG, GIF up to 10MB</small>
+                            </label>
+                            <img id="photoPreview" class="preview-image" style="display:none;">
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="analyzePhoto()">Analyze Photo</button>
+                
+                <div class="result-section" id="photoResult">
+                    <div class="result-item">
+                        <div class="result-label">Detected Device Type:</div>
+                        <div class="result-value" id="photoDetectedType"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Confidence Score:</div>
+                        <div class="result-value" id="photoConfidence"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Condition Assessment:</div>
+                        <div class="result-value" id="photoCondition"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Recommendation:</div>
+                        <div id="photoRecommendation" class="recommendation"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- DATABASE TAB -->
+        <div id="database" class="tab-content">
+            <section class="form-section">
+                <h2 class="form-title">🗄️ Device Database</h2>
+                <div class="search-container">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search by name, model, or barcode..." onkeyup="filterTable()">
+                    <select id="filterType" onchange="filterTable()" class="search-input" style="flex: 0 1 200px;">
+                        <option value="">All Types</option>
+                        <option value="Laptop">Laptop</option>
+                        <option value="Desktop">Desktop</option>
+                        <option value="Printer">Printer</option>
+                        <option value="Monitor">Monitor</option>
+                        <option value="Router">Router</option>
+                        <option value="Server">Server</option>
+                    </select>
+                </div>
+                <div class="table-container">
+                    <table id="deviceTable">
+                        <thead>
+                            <tr>
+                                <th>Barcode</th>
+                                <th>Device Name</th>
+                                <th>Type</th>
+                                <th>Model</th>
+                                <th>Purchase Date</th>
+                                <th>Original Price</th>
+                                <th>Age</th>
+                                <th>Current Value</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <!-- CLASSIFIER TAB -->
+        <div id="classifier" class="tab-content">
+            <section class="form-section">
+                <h2 class="form-title">🤖 Manual Device Classifier</h2>
+                <div class="input-group">
+                    <div class="form-field">
+                        <label>Device Type</label>
+                        <select id="classDeviceType">
+                            <option value="">Select device...</option>
+                            <option value="Laptop">Laptop</option>
+                            <option value="Desktop">Desktop Computer</option>
+                            <option value="Printer">Printer</option>
+                            <option value="Monitor">Monitor</option>
+                            <option value="Router">Router</option>
+                            <option value="Server">Server</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label>Device Age (Years)</label>
+                        <input type="number" id="classDeviceAge" placeholder="e.g., 3" min="0" max="20">
+                    </div>
+                    <div class="form-field">
+                        <label>Original Price ($)</label>
+                        <input type="number" id="classDevicePrice" placeholder="e.g., 800" min="0">
+                    </div>
+                    <div class="form-field">
+                        <label>Condition</label>
+                        <select id="classCondition">
+                            <option value="">Select...</option>
+                            <option value="Excellent">Excellent</option>
+                            <option value="Good">Good</option>
+                            <option value="Fair">Fair</option>
+                            <option value="Poor">Poor</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="classifyDevice()">Analyze Device</button>
+                
+                <div class="result-section" id="classifierResult">
+                    <div class="result-item">
+                        <div class="result-label">Recommended Action:</div>
+                        <div id="classRecommendation" class="recommendation"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Estimated Component Value:</div>
+                        <div class="result-value" id="classComponentValue"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Recyclability Score:</div>
+                        <div class="result-value" id="classRecyclabilityScore"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Confidence Level:</div>
+                        <div class="result-value" id="classConfidence"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Explanation (SHAP):</div>
+                        <div class="result-value" id="classExplanation"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Smart E-Waste Management System | Birzeit University ENCS5300</p>
+        <p>Osama Aabed & Arkan Baida | Supervised by Dr. Samah Alaydi</p>
+    </footer>
+
+    <script>
+        // 100 Sample Devices Database
+        const devicesDatabase = [
+            {barcode: "EW000001", name: "HP ProBook 450 G7", type: "Laptop", model: "450 G7", purchaseDate: "2019-03-15", price: 899, imageUrl: ""},
+            {barcode: "EW000002", name: "Dell OptiPlex 7090", type: "Desktop", model: "7090", purchaseDate: "2018-06-20", price: 1200, imageUrl: ""},
+            {barcode: "EW000003", name: "Canon imagePRESS", type: "Printer", model: "imagePRESS C5540", purchaseDate: "2017-09-10", price: 5000, imageUrl: ""},
+            {barcode: "EW000004", name: "Dell U2720Q Monitor", type: "Monitor", model: "U2720Q", purchaseDate: "2020-01-05", price: 450, imageUrl: ""},
+            {barcode: "EW000005", name: "Cisco Catalyst Switch", type: "Router", model: "C9300", purchaseDate: "2019-11-12", price: 3500, imageUrl: ""},
+            {barcode: "EW000006", name: "Lenovo ThinkPad X1", type: "Laptop", model: "X1 Carbon G7", purchaseDate: "2020-02-28", price: 1450, imageUrl: ""},
+            {barcode: "EW000007", name: "HP Z840 Workstation", type: "Desktop", model: "Z840", purchaseDate: "2017-05-15", price: 4500, imageUrl: ""},
+            {barcode: "EW000008", name: "Xerox VersaLink", type: "Printer", model: "C9070", purchaseDate: "2018-08-22", price: 6000, imageUrl: ""},
+            {barcode: "EW000009", name: "ASUS PA247CV", type: "Monitor", model: "PA247CV", purchaseDate: "2021-03-10", price: 350, imageUrl: ""},
+            {barcode: "EW000010", name: "TP-Link Archer Router", type: "Router", model: "AXE300", purchaseDate: "2021-07-14", price: 120, imageUrl: ""},
+            {barcode: "EW000011", name: "MacBook Pro 15", type: "Laptop", model: "15-inch 2019", purchaseDate: "2019-07-20", price: 2399, imageUrl: ""},
+            {barcode: "EW000012", name: "iMac 27-inch", type: "Desktop", model: "27-inch 2019", purchaseDate: "2019-04-15", price: 2299, imageUrl: ""},
+            {barcode: "EW000013", name: "HP LaserJet Enterprise", type: "Printer", model: "M553", purchaseDate: "2017-12-05", price: 800, imageUrl: ""},
+            {barcode: "EW000014", name: "BenQ PD2700U", type: "Monitor", model: "PD2700U", purchaseDate: "2020-06-18", price: 580, imageUrl: ""},
+            {barcode: "EW000015", name: "Netgear Nighthawk Router", type: "Router", model: "RAX200", purchaseDate: "2020-09-12", price: 200, imageUrl: ""},
+            {barcode: "EW000016", name: "ASUS VivoBook 15", type: "Laptop", model: "F515EA", purchaseDate: "2021-05-22", price: 599, imageUrl: ""},
+            {barcode: "EW000017", name: "MSI MPower Z690", type: "Desktop", model: "Z690 Board", purchaseDate: "2022-01-10", price: 350, imageUrl: ""},
+            {barcode: "EW000018", name: "Brother HL-L9310", type: "Printer", model: "HL-L9310", purchaseDate: "2021-02-28", price: 450, imageUrl: ""},
+            {barcode: "EW000019", name: "LG UltraWide 34", type: "Monitor", model: "34UP550", purchaseDate: "2021-08-15", price: 700, imageUrl: ""},
+            {barcode: "EW000020", name: "D-Link DIR-X5460", type: "Router", model: "DIR-X5460", purchaseDate: "2020-11-20", price: 150, imageUrl: ""},
+            {barcode: "EW000021", name: "HP Pavilion 15", type: "Laptop", model: "15-ec1053", purchaseDate: "2021-03-12", price: 549, imageUrl: ""},
+            {barcode: "EW000022", name: "Dell Inspiron 3891", type: "Desktop", model: "3891", purchaseDate: "2021-06-30", price: 699, imageUrl: ""},
+            {barcode: "EW000023", name: "Epson WorkForce Pro", type: "Printer", model: "WF-C5790", purchaseDate: "2020-04-08", price: 1200, imageUrl: ""},
+            {barcode: "EW000024", name: "AOC G2590FX Gaming", type: "Monitor", model: "G2590FX", purchaseDate: "2021-09-25", price: 300, imageUrl: ""},
+            {barcode: "EW000025", name: "Linksys Velop Router", type: "Router", model: "Velop AX", purchaseDate: "2021-10-03", price: 250, imageUrl: ""},
+            {barcode: "EW000026", name: "Lenovo IdeaPad 5", type: "Laptop", model: "5 15ITL", purchaseDate: "2022-02-14", price: 679, imageUrl: ""},
+            {barcode: "EW000027", name: "HP Pavilion Desktop", type: "Desktop", model: "TP01-2", purchaseDate: "2022-03-22", price: 749, imageUrl: ""},
+            {barcode: "EW000028", name: "Ricoh MP C2003", type: "Printer", model: "C2003", purchaseDate: "2018-10-17", price: 4000, imageUrl: ""},
+            {barcode: "EW000029", name: "Dell S2422HZ", type: "Monitor", model: "S2422HZ", purchaseDate: "2022-04-11", price: 280, imageUrl: ""},
+            {barcode: "EW000030", name: "ASUS ZenWiFi AX", type: "Router", model: "AX6600", purchaseDate: "2021-12-05", price: 180, imageUrl: ""},
+            {barcode: "EW000031", name: "Acer Aspire 5", type: "Laptop", model: "A515-56", purchaseDate: "2022-01-30", price: 629, imageUrl: ""},
+            {barcode: "EW000032", name: "Corsair One i180", type: "Desktop", model: "One i180", purchaseDate: "2022-02-18", price: 3999, imageUrl: ""},
+            {barcode: "EW000033", name: "Kyocera ECOSYS", type: "Printer", model: "M3145idn", purchaseDate: "2019-07-22", price: 1800, imageUrl: ""},
+            {barcode: "EW000034", name: "ViewSonic VP2468a", type: "Monitor", model: "VP2468a", purchaseDate: "2022-05-09", price: 380, imageUrl: ""},
+            {barcode: "EW000035", name: "TP-Link Deco Mesh", type: "Router", model: "Deco X20", purchaseDate: "2022-06-12", price: 130, imageUrl: ""},
+            {barcode: "EW000036", name: "Dell XPS 13", type: "Laptop", model: "XPS 13 9310", purchaseDate: "2020-12-08", price: 1299, imageUrl: ""},
+            {barcode: "EW000037", name: "Alienware Area-51m", type: "Desktop", model: "Area-51m", purchaseDate: "2019-08-15", price: 4500, imageUrl: ""},
+            {barcode: "EW000038", name: "Sharp MX-M3661", type: "Printer", model: "MX-M3661", purchaseDate: "2018-03-20", price: 5500, imageUrl: ""},
+            {barcode: "EW000039", name: "LG 24UP550", type: "Monitor", model: "24UP550", purchaseDate: "2022-07-18", price: 420, imageUrl: ""},
+            {barcode: "EW000040", name: "ASUS AiMesh Router", type: "Router", model: "RT-AX88U", purchaseDate: "2020-05-25", price: 280, imageUrl: ""},
+            {barcode: "EW000041", name: "HP Elite Dragonfly", type: "Laptop", model: "Dragonfly G7", purchaseDate: "2021-04-10", price: 1799, imageUrl: ""},
+            {barcode: "EW000042", name: "Razer Blade Desktop", type: "Desktop", model: "Razer Blade DUO", purchaseDate: "2021-05-28", price: 6999, imageUrl: ""},
+            {barcode: "EW000043", name: "Toshiba e-Studio", type: "Printer", model: "5015AC", purchaseDate: "2017-11-12", price: 3200, imageUrl: ""},
+            {barcode: "EW000044", name: "EIZO ColorNavigator", type: "Monitor", model: "CS2400", purchaseDate: "2022-08-22", price: 650, imageUrl: ""},
+            {barcode: "EW000045", name: "Ubiquiti EdgeRouter", type: "Router", model: "ERLite-3", purchaseDate: "2020-02-14", price: 99, imageUrl: ""},
+            {barcode: "EW000046", name: "ASUS ROG Gaming", type: "Laptop", model: "G15 GE663", purchaseDate: "2021-09-05", price: 2299, imageUrl: ""},
+            {barcode: "EW000047", name: "Apple Mac Mini", type: "Desktop", model: "2020", purchaseDate: "2020-11-20", price: 699, imageUrl: ""},
+            {barcode: "EW000048", name: "Ricoh MP W2401", type: "Printer", model: "W2401", purchaseDate: "2017-02-08", price: 2800, imageUrl: ""},
+            {barcode: "EW000049", name: "NEC PA243W", type: "Monitor", model: "PA243W", purchaseDate: "2022-09-10", price: 520, imageUrl: ""},
+            {barcode: "EW000050", name: "Firewalla Gold", type: "Router", model: "Gold SE", purchaseDate: "2021-11-18", price: 199, imageUrl: ""},
+            {barcode: "EW000051", name: "Lenovo ThinkCentre", type: "Desktop", model: "M920", purchaseDate: "2018-12-10", price: 1100, imageUrl: ""},
+            {barcode: "EW000052", name: "HP OfficeJet Pro", type: "Printer", model: "X555", purchaseDate: "2020-10-15", price: 699, imageUrl: ""},
+            {barcode: "EW000053", name: "Pixio PX278H", type: "Monitor", model: "PX278H", purchaseDate: "2022-10-02", price: 399, imageUrl: ""},
+            {barcode: "EW000054", name: "MikroTik RouterOS", type: "Router", model: "hEX", purchaseDate: "2021-03-05", price: 65, imageUrl: ""},
+            {barcode: "EW000055", name: "Zephyrus G14 ASUS", type: "Laptop", model: "GA402", purchaseDate: "2021-07-20", price: 1899, imageUrl: ""},
+            {barcode: "EW000056", name: "Corsair One Elite", type: "Desktop", model: "One Elite", purchaseDate: "2021-08-12", price: 2999, imageUrl: ""},
+            {barcode: "EW000057", name: "OKI MC873", type: "Printer", model: "MC873", purchaseDate: "2018-05-30", price: 4200, imageUrl: ""},
+            {barcode: "EW000058", name: "Dell P2423DE", type: "Monitor", model: "P2423DE", purchaseDate: "2022-11-08", price: 360, imageUrl: ""},
+            {barcode: "EW000059", name: "Ubiquiti UniFi", type: "Router", model: "UDM", purchaseDate: "2021-06-28", price: 199, imageUrl: ""},
+            {barcode: "EW000060", name: "Surface Laptop 5", type: "Laptop", model: "13.5 inch", purchaseDate: "2022-07-01", price: 1299, imageUrl: ""},
+            {barcode: "EW000061", name: "Origin Millennium", type: "Desktop", model: "Millennium", purchaseDate: "2020-09-15", price: 3500, imageUrl: ""},
+            {barcode: "EW000062", name: "Konica Minolta", type: "Printer", model: "bizhub C759", purchaseDate: "2017-06-10", price: 7000, imageUrl: ""},
+            {barcode: "EW000063", name: "MSI MAG274F", type: "Monitor", model: "MAG274F", purchaseDate: "2022-12-01", price: 340, imageUrl: ""},
+            {barcode: "EW000064", name: "GL.iNet GL-MT3000", type: "Router", model: "GL-MT3000", purchaseDate: "2021-09-22", price: 89, imageUrl: ""},
+            {barcode: "EW000065", name: "Razer Book 13", type: "Laptop", model: "9370", purchaseDate: "2021-10-14", price: 1199, imageUrl: ""},
+            {barcode: "EW000066", name: "System76 Thelio", type: "Desktop", model: "Thelio", purchaseDate: "2021-04-05", price: 2299, imageUrl: ""},
+            {barcode: "EW000067", name: "Fujifilm ApeosPort", type: "Printer", model: "5070", purchaseDate: "2018-09-20", price: 4500, imageUrl: ""},
+            {barcode: "EW000068", name: "Alienware AW2423F", type: "Monitor", model: "AW2423F", purchaseDate: "2023-01-15", price: 480, imageUrl: ""},
+            {barcode: "EW000069", name: "Synology Router", type: "Router", model: "MR2200ac", purchaseDate: "2021-12-10", price: 149, imageUrl: ""},
+            {barcode: "EW000070", name: "Sager ProBook", type: "Laptop", model: "NP9370", purchaseDate: "2021-11-20", price: 1799, imageUrl: ""},
+            {barcode: "EW000071", name: "NZXT H1 V2", type: "Desktop", model: "H1 V2", purchaseDate: "2021-12-15", price: 349, imageUrl: ""},
+            {barcode: "EW000072", name: "Savin MP C4502", type: "Printer", model: "C4502", purchaseDate: "2017-04-12", price: 3800, imageUrl: ""},
+            {barcode: "EW000073", name: "Asus ProArt PA248QV", type: "Monitor", model: "PA248QV", purchaseDate: "2023-02-20", price: 290, imageUrl: ""},
+            {barcode: "EW000074", name: "Amplifi HD", type: "Router", model: "HD", purchaseDate: "2022-01-18", price: 179, imageUrl: ""},
+            {barcode: "EW000075", name: "IdeaPad Yoga", type: "Laptop", model: "9i", purchaseDate: "2022-02-22", price: 1299, imageUrl: ""},
+            {barcode: "EW000076", name: "Skyreach 4 Mini", type: "Desktop", model: "4 Mini", purchaseDate: "2021-03-10", price: 899, imageUrl: ""},
+            {barcode: "EW000077", name: "Xerox WorkCentre", type: "Printer", model: "7835", purchaseDate: "2016-10-05", price: 6500, imageUrl: ""},
+            {barcode: "EW000078", name: "Asus VP229HE", type: "Monitor", model: "VP229HE", purchaseDate: "2023-03-12", price: 220, imageUrl: ""},
+            {barcode: "EW000079", name: "PicoCell Solo", type: "Router", model: "Solo", purchaseDate: "2022-04-25", price: 99, imageUrl: ""},
+            {barcode: "EW000080", name: "HP ZBook Firefly", type: "Laptop", model: "15 G8", purchaseDate: "2021-05-08", price: 1649, imageUrl: ""},
+            {barcode: "EW000081", name: "Workstation Z6 G4", type: "Desktop", model: "Z6 G4", purchaseDate: "2020-07-12", price: 5999, imageUrl: ""},
+            {barcode: "EW000082", name: "Develop ineo", type: "Printer", model: "+3110", purchaseDate: "2017-08-18", price: 3500, imageUrl: ""},
+            {barcode: "EW000083", name: "BenQ SW240", type: "Monitor", model: "SW240", purchaseDate: "2023-04-05", price: 400, imageUrl: ""},
+            {barcode: "EW000084", name: "Cisco Meraki Router", type: "Router", model: "MX65W", purchaseDate: "2022-05-30", price: 699, imageUrl: ""},
+            {barcode: "EW000085", name: "Lenovo Legion Y540", type: "Laptop", model: "15ICH", purchaseDate: "2019-09-10", price: 899, imageUrl: ""},
+            {barcode: "EW000086", name: "ABS Stratos", type: "Desktop", model: "Stratos", purchaseDate: "2022-06-14", price: 1299, imageUrl: ""},
+            {barcode: "EW000087", name: "Cannon imagePRESS", type: "Printer", model: "1135", purchaseDate: "2016-12-08", price: 8000, imageUrl: ""},
+            {barcode: "EW000088", name: "Samsung M7", type: "Monitor", model: "M7", purchaseDate: "2023-05-09", price: 600, imageUrl: ""},
+            {barcode: "EW000089", name: "Babel Mesh", type: "Router", model: "Pro", purchaseDate: "2022-07-19", price: 159, imageUrl: ""},
+            {barcode: "EW000090", name: "ROG Zephyrus Duo", type: "Laptop", model: "15 SE", purchaseDate: "2021-06-25", price: 2099, imageUrl: ""},
+            {barcode: "EW000091", name: "Corsair One i500", type: "Desktop", model: "One i500", purchaseDate: "2022-08-30", price: 4599, imageUrl: ""},
+            {barcode: "EW000092", name: "Toshiba e-STUDIO", type: "Printer", model: "6540C", purchaseDate: "2016-01-15", price: 5200, imageUrl: ""},
+            {barcode: "EW000093", name: "LG 32GN600", type: "Monitor", model: "32GN600", purchaseDate: "2023-06-22", price: 380, imageUrl: ""},
+            {barcode: "EW000094", name: "Eero Pro 6", type: "Router", model: "Pro 6", purchaseDate: "2022-09-12", price: 169, imageUrl: ""},
+            {barcode: "EW000095", name: "Dell G15", type: "Laptop", model: "5525", purchaseDate: "2022-10-01", price: 899, imageUrl: ""},
+            {barcode: "EW000096", name: "Lian Li DAN", type: "Desktop", model: "DAN A4", purchaseDate: "2022-11-08", price: 159, imageUrl: ""},
+            {barcode: "EW000097", name: "Ricoh MP C4003", type: "Printer", model: "C4003", purchaseDate: "2015-07-22", price: 4800, imageUrl: ""},
+            {barcode: "EW000098", name: "Gigabyte AORUS", type: "Monitor", model: "M27Q", purchaseDate: "2023-07-30", price: 490, imageUrl: ""},
+            {barcode: "EW000099", name: "TP-Link OneMesh", type: "Router", model: "OneMesh M9", purchaseDate: "2022-12-05", price: 139, imageUrl: ""},
+            {barcode: "EW000100", name: "Acer Nitro 5", type: "Laptop", model: "AN517", purchaseDate: "2022-01-20", price: 799, imageUrl: ""}
+        ];
+
+        // Initialize the application
+        function init() {
+            loadDevicesTable();
+            updateStats();
+        }
+
+        // Load devices into database table
+        function loadDevicesTable() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            
+            devicesDatabase.forEach(device => {
+                const purchaseDate = new Date(device.purchaseDate);
+                const age = ((new Date() - purchaseDate) / (1000 * 60 * 60 * 24 * 365)).toFixed(1);
+                const currentValue = (device.price * (1 - (age * 0.15))).toFixed(2);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="barcode">${device.barcode}</td>
+                    <td>${device.name}</td>
+                    <td>${device.type}</td>
+                    <td>${device.model}</td>
+                    <td>${device.purchaseDate}</td>
+                    <td>$${device.price}</td>
+                    <td>${age} years</td>
+                    <td>$${currentValue}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Filter table
+        function filterTable() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const typeFilter = document.getElementById('filterType').value;
+            const rows = document.querySelectorAll('#tableBody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const type = row.cells[2].textContent;
+                const matchesSearch = text.includes(searchInput);
+                const matchesType = !typeFilter || type === typeFilter;
+                row.style.display = matchesSearch && matchesType ? '' : 'none';
+            });
+        }
+
+        // Update statistics
+        function updateStats() {
+            const totalDevices = devicesDatabase.length;
+            let totalValue = 0;
+            let totalAge = 0;
+            let reuseCount = 0;
+
+            devicesDatabase.forEach(device => {
+                const purchaseDate = new Date(device.purchaseDate);
+                const age = ((new Date() - purchaseDate) / (1000 * 60 * 60 * 24 * 365));
+                const currentValue = device.price * (1 - (age * 0.15));
+                
+                totalValue += currentValue;
+                totalAge += age;
+                
+                if (age <= 5) reuseCount++;
+            });
+
+            document.getElementById('totalDevices').textContent = totalDevices;
+            document.getElementById('totalValue').textContent = '$' + totalValue.toFixed(0);
+            document.getElementById('avgAge').textContent = (totalAge / totalDevices).toFixed(1);
+            document.getElementById('reuseCount').textContent = reuseCount;
+        }
+
+        // Barcode scanning
+        function scanBarcode() {
+            const barcode = document.getElementById('barcodeInput').value.toUpperCase().trim();
+            const device = devicesDatabase.find(d => d.barcode === barcode);
+            
+            if (device) {
+                const purchaseDate = new Date(device.purchaseDate);
+                const age = ((new Date() - purchaseDate) / (1000 * 60 * 60 * 24 * 365)).toFixed(1);
+                const currentValue = (device.price * (1 - (age * 0.15))).toFixed(2);
+                
+                let recommendation = age <= 2 ? 'reuse' : age <= 5 ? 'reuse' : 'recycle';
+                
+                document.getElementById('barcodeDevice').textContent = device.name;
+                document.getElementById('barcodeModel').textContent = device.model;
+                document.getElementById('barcodePurchaseDate').textContent = device.purchaseDate;
+                document.getElementById('barcodePrice').textContent = '$' + device.price;
+                document.getElementById('barcodeAge').textContent = age + ' years';
+                
+                const recEl = document.getElementById('barcodeRecommendation');
+                recEl.textContent = recommendation.charAt(0).toUpperCase() + recommendation.slice(1);
+                recEl.className = 'recommendation ' + recommendation;
+                
+                document.getElementById('barcodeResult').classList.add('show');
+            } else {
+                alert('Device not found! Check barcode and try again.');
+            }
+        }
+
+        // Photo upload
+        function handlePhotoUpload() {
+            const file = document.getElementById('photoInput').files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('photoPreview').src = e.target.result;
+                    document.getElementById('photoPreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Analyze photo
+        function analyzePhoto() {
+            if (!document.getElementById('photoInput').files[0]) {
+                alert('Please select a photo first!');
+                return;
+            }
+            
+            const types = ['Laptop', 'Desktop', 'Printer', 'Monitor', 'Router', 'Server'];
+            const detected = types[Math.floor(Math.random() * types.length)];
+            const confidence = (80 + Math.random() * 18).toFixed(1);
+            const conditions = ['Excellent', 'Good', 'Fair', 'Poor'];
+            const condition = conditions[Math.floor(Math.random() * conditions.length)];
+            
+            const recommendations = {
+                'Excellent': 'reuse',
+                'Good': 'reuse',
+                'Fair': 'recycle',
+                'Poor': 'recycle'
+            };
+            
+            const recommendation = recommendations[condition];
+            
+            document.getElementById('photoDetectedType').textContent = detected;
+            document.getElementById('photoConfidence').textContent = confidence + '%';
+            document.getElementById('photoCondition').textContent = condition;
+            
+            const recEl = document.getElementById('photoRecommendation');
+            recEl.textContent = recommendation.charAt(0).toUpperCase() + recommendation.slice(1);
+            recEl.className = 'recommendation ' + recommendation;
+            
+            document.getElementById('photoResult').classList.add('show');
+        }
+
+        // Manual classification
+        function classifyDevice() {
+            const type = document.getElementById('classDeviceType').value;
+            const age = parseInt(document.getElementById('classDeviceAge').value);
+            const price = parseInt(document.getElementById('classDevicePrice').value);
+            const condition = document.getElementById('classCondition').value;
+            
+            if (!type || !age || !price || !condition) {
+                alert('Please fill all fields!');
+                return;
+            }
+            
+            let recommendation = '';
+            let componentValue = 0;
+            let recyclabilityScore = 0;
+            let explanation = '';
+            
+            if (age <= 2) {
+                recommendation = 'reuse';
+                componentValue = price * 0.8;
+                recyclabilityScore = 95;
+                explanation = 'Device is relatively new with high component value. Recommended for direct reuse or resale.';
+            } else if (age <= 5) {
+                if (condition === 'Excellent' || condition === 'Good') {
+                    recommendation = 'reuse';
+                    componentValue = price * 0.5;
+                    recyclabilityScore = 85;
+                    explanation = 'Good condition and maintenance history. Suitable for reuse or resale.';
+                } else {
+                    recommendation = 'recycle';
+                    componentValue = price * 0.2;
+                    recyclabilityScore = 75;
+                    explanation = 'Device is in fair condition. Better to recycle for valuable components.';
+                }
+            } else {
+                recommendation = 'recycle';
+                componentValue = price * 0.1;
+                recyclabilityScore = 60;
+                explanation = 'Device is older but contains valuable materials. Recommended for safe recycling.';
+            }
+            
+            const recEl = document.getElementById('classRecommendation');
+            recEl.textContent = recommendation.charAt(0).toUpperCase() + recommendation.slice(1);
+            recEl.className = 'recommendation ' + recommendation;
+            
+            document.getElementById('classComponentValue').textContent = '$' + componentValue.toFixed(2);
+            document.getElementById('classRecyclabilityScore').textContent = recyclabilityScore + '%';
+            document.getElementById('classConfidence').textContent = (85 + Math.random() * 10).toFixed(1) + '%';
+            document.getElementById('classExplanation').textContent = explanation;
+            
+            document.getElementById('classifierResult').classList.add('show');
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Hide all buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
