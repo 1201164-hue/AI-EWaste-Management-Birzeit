@@ -6,7 +6,6 @@ app = Flask(__name__)
 
 model = joblib.load("ewaste_rf_model.pkl")
 encoders = joblib.load("ewaste_encoders.pkl")
-target_encoder = joblib.load("ewaste_target_encoder.pkl")
 
 FEATURES = [
     "اسم الصنف",
@@ -15,6 +14,12 @@ FEATURES = [
     "الغرفة",
     "الدائرة"
 ]
+
+label_map = {
+    0: "Damage",
+    1: "In",
+    2: "Out"
+}
 
 @app.route("/")
 def home():
@@ -38,13 +43,16 @@ def predict():
         if col in encoders:
             le = encoders[col]
 
-            if row[col].iloc[0] in le.classes_:
+            value = row[col].iloc[0]
+
+            if value in le.classes_:
                 row[col] = le.transform(row[col])
             else:
                 row[col] = 0
 
     prediction = model.predict(row[FEATURES])[0]
-    result = target_encoder.inverse_transform([prediction])[0]
+
+    result = label_map.get(int(prediction), str(prediction))
 
     return jsonify({
         "prediction": result
