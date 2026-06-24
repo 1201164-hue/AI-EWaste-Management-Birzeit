@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
 import joblib
+import os
 
 # ==========================
 # Load model files
@@ -11,6 +12,8 @@ model = joblib.load("itad_rf_model.pkl")
 encoders = joblib.load("itad_encoders.pkl")
 features = joblib.load("itad_features.pkl")
 
+DATASET_PATH = os.environ.get("EWASTE_DATASET_PATH", "ewaste_itad_final.csv")
+
 # ==========================
 # Flask app
 # ==========================
@@ -19,13 +22,35 @@ app = Flask(__name__)
 CORS(app)
 
 # ==========================
+# Dataset helpers
+# ==========================
+
+def load_dataset():
+    """Load the final dataset if it exists beside app.py."""
+    if not os.path.exists(DATASET_PATH):
+        return None
+    df = pd.read_csv(DATASET_PATH)
+    if "serial_number" in df.columns:
+        df["serial_lookup"] = (
+            df["serial_number"]
+            .astype(str)
+            .str.replace(".0", "", regex=False)
+            .str.strip()
+        )
+    return df
+
+
+def clean_serial(value):
+    return str(value).replace(".0", "").strip()
+
+# ==========================
 # Device categorization
 # ==========================
 
 def categorize(name):
     name = str(name).lower()
 
-    if any(k in name for k in ["laptop", "notebook", "macbook", "latitude", "thinkpad"]):
+    if any(k in name for k in ["laptop", "notebook", "macbook", "latitude", "thinkpad", "hp compaq"]):
         return "computer"
     if any(k in name for k in ["desktop", "pc", "optiplex", "workstation"]):
         return "desktop"
@@ -33,7 +58,7 @@ def categorize(name):
         return "printer"
     if any(k in name for k in ["scanner", "scanjet"]):
         return "scanner"
-    if any(k in name for k in ["monitor", "lcd", "led", "screen", "display", "projector"]):
+    if any(k in name for k in ["monitor", "lcd", "led", "screen", "display", "projector", "benq"]):
         return "display"
     if any(k in name for k in ["router", "switch", "cisco", "netgear", "access point", "network"]):
         return "network"
@@ -48,6 +73,9 @@ def categorize(name):
 
     return "other"
 
+# ==========================
+# Safe encoder
+# ==========================
 
 def safe_encode(column, value):
     le = encoders[column]
@@ -56,6 +84,9 @@ def safe_encode(column, value):
         return le.transform([value])[0]
     return 0
 
+# ==========================
+# Useful life and warranty
+# ==========================
 
 life_map = {
     "computer": 5,
@@ -68,7 +99,7 @@ life_map = {
     "phone": 4,
     "av_equipment": 5,
     "hvac": 10,
-    "other": 6
+    "other": 6,
 }
 
 warranty_map = {
@@ -82,9 +113,12 @@ warranty_map = {
     "phone": 2,
     "av_equipment": 2,
     "hvac": 5,
-    "other": 2
+    "other": 2,
 }
 
+# ==========================
+# Component analysis engine
+# ==========================
 
 def component_analysis(category, condition, age, repair_ratio):
     condition = str(condition).lower()
@@ -94,68 +128,68 @@ def component_analysis(category, condition, age, repair_ratio):
             "valuable_components": ["RAM", "SSD/HDD", "Screen", "Battery", "Motherboard"],
             "reusable_parts": ["RAM", "SSD/HDD", "Charger", "Keyboard"],
             "recyclable_materials": ["Aluminum", "Copper", "Plastic", "Circuit Boards"],
-            "hazardous_parts": ["Lithium Battery"]
+            "hazardous_parts": ["Lithium Battery"],
         },
         "desktop": {
             "valuable_components": ["CPU", "RAM", "SSD/HDD", "Power Supply", "Motherboard", "GPU"],
             "reusable_parts": ["RAM", "SSD/HDD", "Power Supply", "Cooling Fan"],
             "recyclable_materials": ["Steel", "Aluminum", "Copper", "Plastic", "Circuit Boards"],
-            "hazardous_parts": ["CMOS Battery"]
+            "hazardous_parts": ["CMOS Battery"],
         },
         "printer": {
             "valuable_components": ["Toner Cartridge", "Printer Motor", "Power Supply", "Scanner Unit"],
             "reusable_parts": ["Toner Cartridge", "Paper Tray", "Power Supply"],
             "recyclable_materials": ["Plastic", "Steel", "Copper Wiring", "Circuit Boards"],
-            "hazardous_parts": ["Toner Residue", "Ink Waste"]
+            "hazardous_parts": ["Toner Residue", "Ink Waste"],
         },
         "scanner": {
             "valuable_components": ["Scanner Sensor", "Glass Panel", "Power Supply", "Motor"],
             "reusable_parts": ["Glass Panel", "Power Supply", "USB Cable"],
             "recyclable_materials": ["Glass", "Plastic", "Copper", "Circuit Boards"],
-            "hazardous_parts": ["Lamp Unit"]
+            "hazardous_parts": ["Lamp Unit"],
         },
         "display": {
             "valuable_components": ["LCD/LED Panel", "Power Board", "Backlight", "Stand"],
             "reusable_parts": ["Stand", "Cables", "Power Board"],
             "recyclable_materials": ["Glass", "Plastic", "Copper", "Aluminum"],
-            "hazardous_parts": ["Backlight Components"]
+            "hazardous_parts": ["Backlight Components"],
         },
         "network": {
             "valuable_components": ["Network Board", "Power Adapter", "Ports", "Antennas"],
             "reusable_parts": ["Power Adapter", "Antennas", "Cables"],
             "recyclable_materials": ["Plastic", "Copper", "Circuit Boards", "Metal Ports"],
-            "hazardous_parts": ["Small Capacitors"]
+            "hazardous_parts": ["Small Capacitors"],
         },
         "server": {
             "valuable_components": ["CPU", "RAM", "Storage Drives", "Power Supply", "RAID Controller", "Network Cards"],
             "reusable_parts": ["RAM", "Storage Drives", "Power Supply", "Cooling Fans", "Network Cards"],
             "recyclable_materials": ["Steel", "Aluminum", "Copper", "Circuit Boards"],
-            "hazardous_parts": ["CMOS Battery", "Backup Battery"]
+            "hazardous_parts": ["CMOS Battery", "Backup Battery"],
         },
         "phone": {
             "valuable_components": ["Screen", "Battery", "Camera Module", "Storage Chip", "Logic Board"],
             "reusable_parts": ["Screen", "Camera Module", "Charger"],
             "recyclable_materials": ["Glass", "Aluminum", "Copper", "Rare Metals"],
-            "hazardous_parts": ["Lithium Battery"]
+            "hazardous_parts": ["Lithium Battery"],
         },
         "av_equipment": {
             "valuable_components": ["Speaker Unit", "Camera Lens", "Microphone", "Control Board"],
             "reusable_parts": ["Cables", "Speaker Unit", "Microphone"],
             "recyclable_materials": ["Plastic", "Copper", "Magnets", "Circuit Boards"],
-            "hazardous_parts": ["Small Capacitors"]
+            "hazardous_parts": ["Small Capacitors"],
         },
         "hvac": {
             "valuable_components": ["Compressor", "Fan Motor", "Copper Coil", "Control Board"],
             "reusable_parts": ["Fan Motor", "Control Board", "Copper Coil"],
             "recyclable_materials": ["Copper", "Aluminum", "Steel", "Plastic"],
-            "hazardous_parts": ["Refrigerant Gas", "Capacitors"]
+            "hazardous_parts": ["Refrigerant Gas", "Capacitors"],
         },
         "other": {
             "valuable_components": ["Circuit Board", "Power Supply", "Cables"],
             "reusable_parts": ["Cables", "Power Adapter"],
             "recyclable_materials": ["Plastic", "Copper", "Metal", "Circuit Boards"],
-            "hazardous_parts": ["Capacitors"]
-        }
+            "hazardous_parts": ["Capacitors"],
+        },
     }
 
     result = components.get(category, components["other"]).copy()
@@ -171,10 +205,12 @@ def component_analysis(category, condition, age, repair_ratio):
 
     return result
 
+# ==========================
+# Explanation generator
+# ==========================
 
 def generate_explanation(prediction, category, age, default_life, warranty, repair_ratio):
     reasons = []
-
     if age > default_life:
         reasons.append("device age exceeds the expected useful life")
     if age > warranty:
@@ -184,11 +220,11 @@ def generate_explanation(prediction, category, age, default_life, warranty, repa
     if not reasons:
         reasons.append("device is still within acceptable lifecycle limits")
 
-    return (
-        f"The device was categorized as {category}. "
-        f"The model predicted '{prediction}' because " + ", ".join(reasons) + "."
-    )
+    return f"The device was categorized as {category}. The model predicted '{prediction}' because " + ", ".join(reasons) + "."
 
+# ==========================
+# Routes
+# ==========================
 
 @app.route("/")
 def home():
@@ -232,7 +268,7 @@ def predict():
             "exceeded_life": exceeded_life,
             "current_value": current_value,
             "estimated_repair_cost": repair_cost,
-            "repair_cost_ratio": repair_ratio
+            "repair_cost_ratio": repair_ratio,
         }])
 
         sample = sample[features]
@@ -246,15 +282,7 @@ def predict():
             confidence = round(float(max(probabilities)) * 100, 2)
 
         components = component_analysis(category, condition, age, repair_ratio)
-
-        explanation = generate_explanation(
-            prediction_label,
-            category,
-            age,
-            default_life,
-            warranty,
-            repair_ratio
-        )
+        explanation = generate_explanation(prediction_label, category, age, default_life, warranty, repair_ratio)
 
         return jsonify({
             "prediction": prediction_label,
@@ -268,7 +296,7 @@ def predict():
             "out_of_warranty": out_of_warranty,
             "exceeded_life": exceeded_life,
             "components": components,
-            "explanation": explanation
+            "explanation": explanation,
         })
 
     except Exception as e:
@@ -277,21 +305,26 @@ def predict():
 
 @app.route("/statistics", methods=["GET"])
 def statistics():
-    return jsonify({
-        "total_devices": 10668,
-        "ewaste_devices": 2042,
-        "average_current_value": 71.10,
-        "model_accuracy": 99.84,
+    df = load_dataset()
 
-        "predictions": {
+    if df is not None and "itad_decision" in df.columns and "item_category" in df.columns:
+        total_devices = int(len(df))
+        ewaste_devices = int(df.get("is_ewaste", pd.Series(dtype=int)).fillna(0).sum()) if "is_ewaste" in df.columns else 0
+        avg_value = float(df["current_value"].fillna(0).mean()) if "current_value" in df.columns else 0
+        predictions = {str(k): int(v) for k, v in df["itad_decision"].fillna("Unknown").value_counts().to_dict().items()}
+        categories = {str(k): int(v) for k, v in df["item_category"].fillna("other").value_counts().to_dict().items()}
+    else:
+        total_devices = 10668
+        ewaste_devices = 2042
+        avg_value = 71.10
+        predictions = {
             "Review for E-Waste": 7377,
             "Recycle / Dispose": 2041,
             "Maintenance Check": 729,
             "Keep in Use": 520,
-            "Repair": 1
-        },
-
-        "categories": {
+            "Repair": 1,
+        }
+        categories = {
             "other": 4084,
             "computer": 2344,
             "display": 1993,
@@ -299,15 +332,59 @@ def statistics():
             "av_equipment": 610,
             "network": 301,
             "printer": 296,
-            "phone": 22
-        },
+            "phone": 22,
+        }
 
+    return jsonify({
+        "total_devices": total_devices,
+        "ewaste_devices": ewaste_devices,
+        "average_current_value": round(avg_value, 2),
+        "model_accuracy": 99.84,
+        "predictions": predictions,
+        "categories": categories,
         "environmental_impact": {
             "co2_saved_kg": 3456,
             "materials_recovered_kg": 2789,
-            "hazardous_waste_handled_kg": 850
-        }
+            "hazardous_waste_handled_kg": 850,
+        },
     })
+
+
+@app.route("/device/<serial_number>", methods=["GET"])
+def get_device(serial_number):
+    try:
+        df = load_dataset()
+        if df is None:
+            return jsonify({"error": "Dataset file not found on server"}), 404
+
+        if "serial_lookup" not in df.columns:
+            df["serial_lookup"] = df["serial_number"].astype(str).str.replace(".0", "", regex=False).str.strip()
+
+        serial = clean_serial(serial_number)
+        row = df[df["serial_lookup"] == serial]
+
+        if row.empty:
+            return jsonify({"error": "Device not found"}), 404
+
+        device = row.iloc[0]
+
+        return jsonify({
+            "serial_number": clean_serial(device.get("serial_number", "")),
+            "item_name": str(device.get("item_name", "")),
+            "price": float(device.get("price", 0) or 0),
+            "item_age_years": float(device.get("item_age_years", 0) or 0),
+            "status": str(device.get("status", "")),
+            "item_category": str(device.get("item_category", "")),
+            "itad_decision": str(device.get("itad_decision", "")),
+            "current_value": float(device.get("current_value", 0) or 0),
+            "repair_cost_ratio": float(device.get("repair_cost_ratio", 0) or 0),
+            "building": str(device.get("building", "")),
+            "department": str(device.get("department", "")),
+            "room": str(device.get("room", "")),
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
