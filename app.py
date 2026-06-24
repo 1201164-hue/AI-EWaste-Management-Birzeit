@@ -27,54 +27,35 @@ def categorize(name):
 
     if any(k in name for k in ["laptop", "notebook", "macbook", "latitude", "thinkpad"]):
         return "computer"
-
     if any(k in name for k in ["desktop", "pc", "optiplex", "workstation"]):
         return "desktop"
-
     if any(k in name for k in ["printer", "laserjet", "inkjet", "fax"]):
         return "printer"
-
     if any(k in name for k in ["scanner", "scanjet"]):
         return "scanner"
-
     if any(k in name for k in ["monitor", "lcd", "led", "screen", "display", "projector"]):
         return "display"
-
     if any(k in name for k in ["router", "switch", "cisco", "netgear", "access point", "network"]):
         return "network"
-
     if any(k in name for k in ["server", "rack", "storage", "nas"]):
         return "server"
-
     if any(k in name for k in ["phone", "mobile", "tablet", "ipad", "iphone"]):
         return "phone"
-
     if any(k in name for k in ["camera", "speaker", "headset", "microphone", "audio"]):
         return "av_equipment"
-
     if any(k in name for k in ["fan", "ac", "air", "cooler", "hvac"]):
         return "hvac"
 
     return "other"
 
 
-# ==========================
-# Safe encoder
-# ==========================
-
 def safe_encode(column, value):
     le = encoders[column]
     value = str(value)
-
     if value in le.classes_:
         return le.transform([value])[0]
-
     return 0
 
-
-# ==========================
-# Useful life and warranty
-# ==========================
 
 life_map = {
     "computer": 5,
@@ -104,10 +85,6 @@ warranty_map = {
     "other": 2
 }
 
-
-# ==========================
-# Component analysis engine
-# ==========================
 
 def component_analysis(category, condition, age, repair_ratio):
     condition = str(condition).lower()
@@ -195,22 +172,15 @@ def component_analysis(category, condition, age, repair_ratio):
     return result
 
 
-# ==========================
-# Explanation generator
-# ==========================
-
 def generate_explanation(prediction, category, age, default_life, warranty, repair_ratio):
     reasons = []
 
     if age > default_life:
         reasons.append("device age exceeds the expected useful life")
-
     if age > warranty:
         reasons.append("device is outside the estimated warranty period")
-
     if repair_ratio > 1:
         reasons.append("repair cost ratio is high compared to current value")
-
     if not reasons:
         reasons.append("device is still within acceptable lifecycle limits")
 
@@ -220,13 +190,9 @@ def generate_explanation(prediction, category, age, default_life, warranty, repa
     )
 
 
-# ==========================
-# Routes
-# ==========================
-
 @app.route("/")
 def home():
-    return "ITAD AI API with prediction, statistics, and component analysis is running"
+    return "Smart E-Waste ITAD API is running"
 
 
 @app.route("/predict", methods=["POST"])
@@ -240,7 +206,6 @@ def predict():
         condition = data.get("condition", "Unknown")
 
         category = categorize(item_name)
-
         default_life = life_map.get(category, 6)
         warranty = warranty_map.get(category, 2)
 
@@ -280,20 +245,15 @@ def predict():
             probabilities = model.predict_proba(sample)[0]
             confidence = round(float(max(probabilities)) * 100, 2)
 
-        components = component_analysis(
-            category=category,
-            condition=condition,
-            age=age,
-            repair_ratio=repair_ratio
-        )
+        components = component_analysis(category, condition, age, repair_ratio)
 
         explanation = generate_explanation(
-            prediction=prediction_label,
-            category=category,
-            age=age,
-            default_life=default_life,
-            warranty=warranty,
-            repair_ratio=repair_ratio
+            prediction_label,
+            category,
+            age,
+            default_life,
+            warranty,
+            repair_ratio
         )
 
         return jsonify({
@@ -312,37 +272,34 @@ def predict():
         })
 
     except Exception as e:
-        return jsonify({
-            "error": str(e)
-        }), 500
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/statistics", methods=["GET"])
 def statistics():
     return jsonify({
-        "total_devices": 3201,
+        "total_devices": 10668,
+        "ewaste_devices": 2042,
+        "average_current_value": 71.10,
         "model_accuracy": 99.84,
 
         "predictions": {
-            "Keep in Use": 850,
-            "Maintenance Check": 420,
-            "Repair": 510,
-            "Review for E-Waste": 760,
-            "Recycle / Dispose": 661
+            "Review for E-Waste": 7377,
+            "Recycle / Dispose": 2041,
+            "Maintenance Check": 729,
+            "Keep in Use": 520,
+            "Repair": 1
         },
 
         "categories": {
-            "computer": 1200,
-            "desktop": 430,
-            "printer": 650,
-            "scanner": 120,
-            "display": 400,
-            "network": 300,
-            "server": 200,
-            "phone": 180,
-            "av_equipment": 90,
-            "hvac": 40,
-            "other": 451
+            "other": 4084,
+            "computer": 2344,
+            "display": 1993,
+            "hvac": 1018,
+            "av_equipment": 610,
+            "network": 301,
+            "printer": 296,
+            "phone": 22
         },
 
         "environmental_impact": {
