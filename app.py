@@ -228,20 +228,16 @@ def generate_explanation(prediction, category, age, default_life, warranty, repa
 # AI Agent Advisor
 # ==========================
 
-AZURE_OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT", "").rstrip("/")
-AZURE_OPENAI_API_KEY = os.environ.get("AZURE_OPENAI_API_KEY", "")
-AZURE_OPENAI_DEPLOYMENT = os.environ.get("AZURE_OPENAI_DEPLOYMENT", "")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "").strip()
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini").strip()
 
 
 def get_openai_client():
-    """Create an Azure OpenAI v1 client only when the required settings exist."""
-    if not (AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY and AZURE_OPENAI_DEPLOYMENT):
+    """Create a direct OpenAI client when OPENAI_API_KEY is configured."""
+    if not OPENAI_API_KEY:
         return None
 
-    return OpenAI(
-        api_key=AZURE_OPENAI_API_KEY,
-        base_url=f"{AZURE_OPENAI_ENDPOINT}/openai/v1/",
-    )
+    return OpenAI(api_key=OPENAI_API_KEY)
 
 
 def find_device_record(serial_number):
@@ -283,7 +279,7 @@ def find_device_record(serial_number):
 
 
 def build_rule_based_advice(question, device=None, language="en"):
-    """Safe fallback response when Azure OpenAI is not configured or unavailable."""
+    """Safe fallback response when OpenAI is not configured or unavailable."""
     is_ar = str(language).lower().startswith("ar")
 
     if device:
@@ -323,7 +319,7 @@ def build_rule_based_advice(question, device=None, language="en"):
     )
 
 
-def ask_azure_advisor(question, device=None, language="en"):
+def ask_openai_advisor(question, device=None, language="en"):
     client = get_openai_client()
     if client is None:
         return build_rule_based_advice(question, device, language), False
@@ -346,7 +342,7 @@ When a device is supplied, use these headings: Assessment, Recommended action, R
     user_prompt = f"Language: {language}\nUser question: {question}\nDevice record:\n{device_context}"
 
     response = client.responses.create(
-        model=AZURE_OPENAI_DEPLOYMENT,
+        model=OPENAI_MODEL,
         instructions=system_prompt,
         input=user_prompt,
         max_output_tokens=500,
@@ -456,9 +452,9 @@ def advisor():
         device = find_device_record(serial_number) if serial_number else None
 
         try:
-            answer, ai_used = ask_azure_advisor(question, device, language)
+            answer, ai_used = ask_openai_advisor(question, device, language)
         except Exception as ai_error:
-            app.logger.exception("Azure OpenAI advisor failed: %s", ai_error)
+            app.logger.exception("OpenAI advisor failed: %s", ai_error)
             answer = build_rule_based_advice(question, device, language)
             ai_used = False
 
