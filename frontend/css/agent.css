@@ -1308,4 +1308,38 @@ body.light textarea::placeholder{
 }
 body.light .site-footer{
   background:#edf5f0;
+
+  /* Device-loading status messages */
+
+.agent-side-status {
+  min-height: 20px;
+  margin-top: 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.agent-side-status.loading {
+  color: var(--cyan);
+}
+
+.agent-side-status.success {
+  color: var(--green);
+}
+
+.agent-side-status.error {
+  color: #ff6b6b;
+}
+
+body.light .agent-side-status.loading {
+  color: #007f91;
+}
+
+body.light .agent-side-status.success {
+  color: #087541;
+}
+
+body.light .agent-side-status.error {
+  color: #c9364d;
+}
 }
