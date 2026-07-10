@@ -4,36 +4,65 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
+
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
+    branches:
+      - main
 
 jobs:
   build_and_deploy_job:
+    if: >
+      github.event_name == 'push' ||
+      (
+        github.event_name == 'pull_request' &&
+        github.event.action != 'closed'
+      )
+
     runs-on: ubuntu-latest
     name: Build and Deploy Job
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: false
 
-      - name: Verify frontend files
+      - name: Check frontend
         run: |
-          echo "Frontend files:"
           ls -la frontend
-          echo "CSS files:"
-          ls -la frontend/css
-          echo "JavaScript files:"
-          ls -la frontend/js
           test -f frontend/index.html
           test -f frontend/css/style.css
           test -f frontend/js/app.js
 
-      - name: Deploy Static Website
+      - name: Build and Deploy
+        id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_BAY_03C36D910 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
+
           app_location: "/frontend"
           api_location: ""
-          output_location: ""
-          skip_app_build: true
+          output_location: "."
+
+  close_pull_request_job:
+    if: >
+      github.event_name == 'pull_request' &&
+      github.event.action == 'closed'
+
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
+
+    steps:
+      - name: Close Pull Request
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_BAY_03C36D910 }}
+          action: "close"
