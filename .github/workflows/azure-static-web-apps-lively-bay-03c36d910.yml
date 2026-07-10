@@ -15,21 +15,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check frontend files
+      - name: Verify frontend files
         run: |
-          echo "Repository root:"
-          ls -la
-          echo "Frontend directory:"
+          echo "Frontend files:"
           ls -la frontend
+          echo "CSS files:"
+          ls -la frontend/css
+          echo "JavaScript files:"
+          ls -la frontend/js
           test -f frontend/index.html
+          test -f frontend/css/style.css
+          test -f frontend/js/app.js
 
       - name: Deploy Static Website
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LIVELY_BAY_03C36D910 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action: upload
-          app_location: frontend
+          action: "upload"
+          app_location: "/frontend"
           api_location: ""
           output_location: ""
           skip_app_build: true
