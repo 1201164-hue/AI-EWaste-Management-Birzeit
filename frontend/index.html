@@ -49,7 +49,7 @@ body[dir="rtl"] .impact-row span{float:left}
 .quick{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;padding:0 30px 22px}.quick-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px;min-height:120px;cursor:pointer;transition:.22s;backdrop-filter:blur(18px)}.quick-card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(49,255,114,.12)}.quick-icon{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-size:1.8rem;margin-bottom:12px;border:1px solid var(--border);background:rgba(49,255,114,.08)}.quick-card p{color:var(--muted);font-size:.92rem;line-height:1.5;margin-top:8px}
 .dashboard{display:grid;grid-template-columns:1.2fr .7fr .95fr;gap:16px;padding:0 30px 22px}.panel{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:22px;backdrop-filter:blur(18px);box-shadow:0 18px 40px rgba(0,0,0,.18)}.panel h3{margin-bottom:18px;font-size:1.35rem}
 .pred-item{display:grid;grid-template-columns:70px 1fr 145px 80px;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08)}.pred-img{width:62px;height:52px;border-radius:10px;object-fit:cover}.decision-badge{display:inline-flex;justify-content:center;padding:8px 12px;border-radius:9px;font-weight:900;font-size:.83rem}.review{background:rgba(255,77,109,.15);color:#ff7b92;border:1px solid rgba(255,77,109,.26)}.reuse{background:rgba(49,255,114,.12);color:var(--green);border:1px solid rgba(49,255,114,.24)}.recycle{background:rgba(255,212,59,.14);color:var(--yellow);border:1px solid rgba(255,212,59,.24)}
-.ai-chat{min-height:210px;display:flex;flex-direction:column;gap:14px}.bubble{max-width:90%;background:linear-gradient(135deg,rgba(32,232,255,.13),rgba(49,255,114,.1));border:1px solid var(--border);padding:16px;border-radius:16px;line-height:1.5}.chat-input{margin-top:auto;display:flex;gap:10px}.chat-input input{flex:1}.send-btn{width:52px;border:0;border-radius:14px;background:var(--green);font-size:1.4rem;cursor:pointer}
+.ai-chat{min-height:210px;display:flex;flex-direction:column;gap:14px;max-height:520px;overflow-y:auto}.bubble{max-width:90%;white-space:pre-wrap;overflow-wrap:anywhere;background:linear-gradient(135deg,rgba(32,232,255,.13),rgba(49,255,114,.1));border:1px solid var(--border);padding:16px;border-radius:16px;line-height:1.5}.chat-input{margin-top:auto;display:flex;gap:10px}.chat-input input{flex:1}.send-btn{width:52px;border:0;border-radius:14px;background:var(--green);font-size:1.4rem;cursor:pointer}
 .ring{width:190px;height:190px;margin:auto;border-radius:50%;background:conic-gradient(var(--green) 0 35%,var(--cyan) 35% 58%,var(--yellow) 58% 78%,rgba(255,255,255,.1) 78% 100%);display:grid;place-items:center}.ring-inner{width:125px;height:125px;border-radius:50%;background:rgba(0,0,0,.55);display:grid;place-items:center;text-align:center}.bars{margin-top:18px;display:grid;gap:12px}.bar-row{display:grid;grid-template-columns:1fr 80px;gap:12px}.bar-track{height:10px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden}.bar-fill{height:100%;background:var(--green);border-radius:99px}
 .content{padding:34px}.page-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:20px}.form-grid{display:grid;gap:16px}label{font-weight:900;color:var(--muted);display:block;margin-bottom:8px}input,select,textarea{width:100%;border:1px solid var(--border);background:rgba(255,255,255,.07);color:var(--text);padding:15px;border-radius:14px;outline:0}body.light input,body.light select,body.light textarea{background:rgba(255,255,255,.75)}
 .result-box{min-height:420px;display:grid;place-items:center;border:1px dashed var(--border);border-radius:20px;background:rgba(255,255,255,.035)}.big-result{text-align:center}.big-result .icon{font-size:4rem;margin-bottom:14px}.result-detail{display:none;width:100%}.result-detail.show{display:block}.result-pill{display:inline-flex;padding:16px 22px;border-radius:999px;font-size:1.35rem;font-weight:950;margin-bottom:18px}.result-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.info{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:16px}.info small{display:block;color:var(--muted);font-weight:900;margin-bottom:6px}.info.explain{grid-column:1/-1}
@@ -99,7 +99,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:14px;border-bottom:1px s
 </div>
 </section>
 
-<section id="scan" class="section"><div class="content page-grid"><div class="panel"><h3 data-i18n="scanAnalyze">Scan & Analyze Device</h3><div class="form-grid"><label data-i18n="deviceType">Device Type</label><select id="deviceType"></select><label data-i18n="age">Device Age (Years)</label><input type="number" id="deviceAge"><label data-i18n="price">Original Price ($)</label><input type="number" id="devicePrice"><label data-i18n="condition">Condition</label><select id="deviceCondition"></select><label data-i18n="photoUpload">Upload Device Photo</label><input type="file" id="photoInput" accept="image/*" onchange="previewPhoto()"><img id="photoPreview" style="display:none;width:100%;max-height:220px;object-fit:contain;border-radius:16px;border:1px solid var(--border);padding:8px"><button class="main-btn" onclick="analyzeDevice()" data-i18n="analyze">Analyze Device</button></div></div><div class="panel"><h3 data-i18n="predictionResult">Prediction Result</h3><div class="result-box"><div class="big-result" id="emptyResult"><div class="icon">🤖</div><h3 data-i18n="ready">Ready to analyze</h3><p data-i18n="readyText">Fill the device details and click Analyze Device.</p></div><div class="result-detail" id="resultDetail"><div id="resultPill" class="result-pill review">Review for E-Waste</div><div class="result-grid"><div class="info"><small data-i18n="currentValue">Estimated Current Value</small><b id="currentValue">$0.00</b></div><div class="info"><small data-i18n="repairRatio">Repair Cost Ratio</small><b id="repairRatio">0.00</b></div><div class="info"><small data-i18n="category">Detected Category</small><b id="category">-</b></div><div class="info"><small data-i18n="model">Model</small><b>Random Forest ITAD</b></div><div class="info explain"><small data-i18n="explanation">Explanation</small><b id="explanation">-</b></div></div></div></div></div></div></section>
+<section id="scan" class="section"><div class="content page-grid"><div class="panel"><h3 data-i18n="scanAnalyze">Scan & Analyze Device</h3><div class="form-grid"><label id="serialLabel">Serial Number / Barcode</label><div style="display:grid;grid-template-columns:1fr auto;gap:10px"><input id="deviceSerial" type="text" placeholder="Enter serial number or scan barcode"><button class="secondary-btn" type="button" onclick="loadDeviceBySerial()" id="loadSerialBtn" style="padding:12px 18px">Load Device</button></div><small id="serialStatus" style="color:var(--muted);margin-top:-8px"></small><label data-i18n="deviceType">Device Type</label><select id="deviceType"></select><label data-i18n="age">Device Age (Years)</label><input type="number" id="deviceAge"><label data-i18n="price">Original Price ($)</label><input type="number" id="devicePrice"><label data-i18n="condition">Condition</label><select id="deviceCondition"></select><label data-i18n="photoUpload">Upload Device Photo</label><input type="file" id="photoInput" accept="image/*" onchange="previewPhoto()"><img id="photoPreview" style="display:none;width:100%;max-height:220px;object-fit:contain;border-radius:16px;border:1px solid var(--border);padding:8px"><button class="main-btn" onclick="analyzeDevice()" data-i18n="analyze">Analyze Device</button></div></div><div class="panel"><h3 data-i18n="predictionResult">Prediction Result</h3><div class="result-box"><div class="big-result" id="emptyResult"><div class="icon">🤖</div><h3 data-i18n="ready">Ready to analyze</h3><p data-i18n="readyText">Fill the device details and click Analyze Device.</p></div><div class="result-detail" id="resultDetail"><div id="resultPill" class="result-pill review">Review for E-Waste</div><div class="result-grid"><div class="info"><small data-i18n="currentValue">Estimated Current Value</small><b id="currentValue">$0.00</b></div><div class="info"><small data-i18n="repairRatio">Repair Cost Ratio</small><b id="repairRatio">0.00</b></div><div class="info"><small data-i18n="category">Detected Category</small><b id="category">-</b></div><div class="info"><small data-i18n="model">Model</small><b>Random Forest ITAD</b></div><div class="info explain"><small data-i18n="explanation">Explanation</small><b id="explanation">-</b></div></div></div></div></div></div></section>
 <section id="database" class="section"><div class="content"><div class="panel"><h3 data-i18n="database">Database</h3><input id="search" onkeyup="filterTable()"><table><thead><tr><th data-i18n="barcode">Barcode</th><th data-i18n="device">Device</th><th data-i18n="type">Type</th><th data-i18n="tableAge">Age</th><th data-i18n="tablePrice">Price</th><th data-i18n="decision">Decision</th></tr></thead><tbody id="dbTable"></tbody></table></div></div></section>
 <section id="analytics" class="section"><div class="content dashboard" style="grid-template-columns:repeat(3,1fr)"><div class="panel"><h3 data-i18n="totalDevices">Total Devices</h3><b style="font-size:3rem;color:var(--green)">12,540</b><p style="color:var(--green)" data-i18n="thisMonth">+15.2% this month</p></div><div class="panel"><h3 data-i18n="co2Saved">CO₂ Saved</h3><b style="font-size:3rem;color:var(--green)">6.2</b><p data-i18n="tons">tons</p></div><div class="panel"><h3 data-i18n="accuracyRate">Accuracy Rate</h3><b style="font-size:3rem;color:var(--green)">87.9%</b><p data-i18n="rfModel">Random Forest Model</p></div></div></section>
 <section id="agent" class="section"><div class="content page-grid"><div class="panel"><h3 data-i18n="agentAssistant">AI Agent Assistant</h3><label for="agentSerial">Serial Number / Barcode (optional)</label><input id="agentSerial" placeholder="Example: 1201164-hue" style="margin-bottom:14px"><div id="agentChat" class="ai-chat"><div class="bubble" data-i18n="agentAsk">Ask me about e-waste, device decisions, or project features.</div></div><div class="chat-input" style="margin-top:16px"><input id="agentInput" placeholder="Ask the AI advisor..."><button id="agentSendBtn" class="send-btn" onclick="agentReplyFull()">➤</button></div></div><div class="panel"><h3 data-i18n="agentSuggestions">Agent Suggestions</h3><p style="color:var(--muted);line-height:1.8" data-i18n="agentSuggestionsText">Try asking: Why recycle old printers? What does ITAD mean? How does the model decide?</p><div class="info" style="margin-top:18px"><small>Database-grounded advice</small><b id="agentDeviceStatus">No device selected</b></div></div></div></section>
@@ -112,6 +112,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:14px;border-bottom:1px s
 const API_BASE_URL="https://ewaste-itad-api-hufud9ada8crcrhm.israelcentral-01.azurewebsites.net";
 const API_URL=`${API_BASE_URL}/predict`;
 const ADVISOR_URL=`${API_BASE_URL}/advisor`;
+const ADVISOR_STREAM_URL=`${API_BASE_URL}/advisor/stream`;
 let lang="en",heroIndex=0;
 const heroImages=["https://images.unsplash.com/photo-1532601224476-15c79f2f7a51?auto=format&fit=crop&w=1800&q=85","https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1800&q=85","https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1800&q=85","https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=1800&q=85"];
 const dict={
@@ -154,12 +155,139 @@ function renderDB(){document.getElementById("dbTable").innerHTML=devices.map(d=>
 function filterTable(){const q=document.getElementById("search").value.toLowerCase();document.querySelectorAll("#dbTable tr").forEach(r=>r.style.display=r.textContent.toLowerCase().includes(q)?"":"none")}
 function previewPhoto(){const f=document.getElementById("photoInput").files[0];if(!f)return;const img=document.getElementById("photoPreview");img.src=URL.createObjectURL(f);img.style.display="block"}
 function decisionArabic(decision){const m={"Keep in Use":"إبقاء في الاستخدام","Maintenance Check":"فحص صيانة","Repair":"إصلاح","Review for E-Waste":"مراجعة كنفايات إلكترونية","Recycle / Dispose":"إعادة تدوير / التخلص"};return m[decision]||decision}
-async function analyzeDevice(){let type=document.getElementById("deviceType").value,age=parseFloat(document.getElementById("deviceAge").value),price=parseFloat(document.getElementById("devicePrice").value),cond=document.getElementById("deviceCondition").value;if(!type||isNaN(age)||isNaN(price)||!cond){toast(lang==="ar"?"املأ جميع الحقول":"Fill all fields");return}let apiType=apiMap[type]||type;document.getElementById("emptyResult").style.display="none";document.getElementById("resultDetail").classList.add("show");const pill=document.getElementById("resultPill");pill.textContent=lang==="ar"?"جاري التحليل...":"Analyzing...";try{const res=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({item_name:apiType,price:price,item_age_years:age})});const data=await res.json();const decision=data.prediction||"Unknown";pill.textContent=lang==="ar"?decisionArabic(decision):decision;pill.className="result-pill "+(decision==="Keep in Use"?"reuse":decision.includes("Review")?"review":"recycle");document.getElementById("currentValue").textContent="$"+Number(data.current_value||0).toFixed(2);document.getElementById("repairRatio").textContent=Number(data.repair_cost_ratio||0).toFixed(2);document.getElementById("category").textContent=data.item_category||apiType;document.getElementById("explanation").textContent=lang==="ar"?"حلل النموذج العمر والقيمة الحالية ومؤشرات الضمان ونسبة تكلفة الإصلاح لإنتاج قرار ITAD.":"AI model analyzed lifecycle, useful life, current value, warranty indicators and repair ratio to generate this ITAD decision.";recent.unshift({barcode:"EWNEW",deviceEn:apiType,deviceAr:type,typeEn:apiType,typeAr:type,age,price,decisionEn:decision,decisionAr:decisionArabic(decision)});recent=recent.slice(0,3);renderRecent()}catch(e){pill.textContent=lang==="ar"?"فشل الاتصال":"API Failed";toast(lang==="ar"?"فشل الاتصال بالواجهة":"API connection failed")}}
+let loadedDeviceItemName="";
+function categoryToDevice(category,itemName){
+ const c=String(category||"").toLowerCase(),n=String(itemName||"").toLowerCase();
+ const en={computer:"Laptop",desktop:"Desktop Computer",printer:"Printer",display:"Monitor",network:"Router",server:"Server",scanner:"Scanner"};
+ const ar={computer:"لابتوب",desktop:"كمبيوتر مكتبي",printer:"طابعة",display:"شاشة",network:"راوتر",server:"سيرفر",scanner:"ماسح ضوئي"};
+ let key=c;
+ if(n.includes("projector")) return lang==="ar"?"بروجكتور":"Projector";
+ if(n.includes("scanner")) key="scanner";
+ return (lang==="ar"?ar[key]:en[key])||"";
+}
+async function loadDeviceBySerial(){
+ const serial=document.getElementById("deviceSerial").value.trim();
+ const status=document.getElementById("serialStatus");
+ if(!serial){toast(lang==="ar"?"أدخل الرقم التسلسلي":"Enter a serial number");return;}
+ status.textContent=lang==="ar"?"جاري البحث...":"Searching database...";
+ try{
+  const res=await fetch(`${API_BASE_URL}/device/${encodeURIComponent(serial)}`);
+  const data=await res.json();
+  if(!res.ok) throw new Error(data.error||"Device not found");
+  loadedDeviceItemName=data.item_name||"";
+  document.getElementById("deviceAge").value=Number(data.item_age_years||0);
+  document.getElementById("devicePrice").value=Number(data.price||0);
+  const deviceValue=categoryToDevice(data.item_category,data.item_name);
+  if(deviceValue) document.getElementById("deviceType").value=deviceValue;
+  const condition=document.getElementById("deviceCondition");
+  const st=String(data.status||"").toLowerCase();
+  let cond=st.includes("damage")?(lang==="ar"?"تالفة":"Damage"):st.includes("poor")?(lang==="ar"?"سيئة":"Poor"):st.includes("good")?(lang==="ar"?"جيدة":"Good"):(lang==="ar"?"متوسطة":"Fair");
+  condition.value=cond;
+  status.textContent=(lang==="ar"?"تم العثور على الجهاز: ":"Device found: ")+(data.item_name||serial);
+  toast(lang==="ar"?"تم تحميل بيانات الجهاز":"Device data loaded");
+ }catch(e){
+  loadedDeviceItemName="";
+  status.textContent=lang==="ar"?"الجهاز غير موجود في قاعدة البيانات":"Device not found in database";
+  toast(status.textContent);
+ }
+}
+async function analyzeDevice(){let type=document.getElementById("deviceType").value,age=parseFloat(document.getElementById("deviceAge").value),price=parseFloat(document.getElementById("devicePrice").value),cond=document.getElementById("deviceCondition").value;if(!type||isNaN(age)||isNaN(price)||!cond){toast(lang==="ar"?"املأ جميع الحقول":"Fill all fields");return}let apiType=loadedDeviceItemName||apiMap[type]||type;document.getElementById("emptyResult").style.display="none";document.getElementById("resultDetail").classList.add("show");const pill=document.getElementById("resultPill");pill.textContent=lang==="ar"?"جاري التحليل...":"Analyzing...";try{const res=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({item_name:apiType,price:price,item_age_years:age,condition:cond})});const data=await res.json();const decision=data.prediction||"Unknown";pill.textContent=lang==="ar"?decisionArabic(decision):decision;pill.className="result-pill "+(decision==="Keep in Use"?"reuse":decision.includes("Review")?"review":"recycle");document.getElementById("currentValue").textContent="$"+Number(data.current_value||0).toFixed(2);document.getElementById("repairRatio").textContent=Number(data.repair_cost_ratio||0).toFixed(2);document.getElementById("category").textContent=data.item_category||apiType;document.getElementById("explanation").textContent=lang==="ar"?"حلل النموذج العمر والقيمة الحالية ومؤشرات الضمان ونسبة تكلفة الإصلاح لإنتاج قرار ITAD.":"AI model analyzed lifecycle, useful life, current value, warranty indicators and repair ratio to generate this ITAD decision.";recent.unshift({barcode:"EWNEW",deviceEn:apiType,deviceAr:type,typeEn:apiType,typeAr:type,age,price,decisionEn:decision,decisionAr:decisionArabic(decision)});recent=recent.slice(0,3);renderRecent()}catch(e){pill.textContent=lang==="ar"?"فشل الاتصال":"API Failed";toast(lang==="ar"?"فشل الاتصال بالواجهة":"API connection failed")}}
 function escapeHTML(value){const el=document.createElement("div");el.textContent=value??"";return el.innerHTML}
-function addAgentBubble(text,isUser=false){const chat=document.getElementById("agentChat");const div=document.createElement("div");div.className="bubble";if(isUser){div.style.marginLeft="auto";div.style.background="rgba(49,255,114,.12)"}div.innerHTML=escapeHTML(text).replace(/\n/g,"<br>");chat.appendChild(div);chat.scrollTop=chat.scrollHeight;return div}
-async function requestAdvisor(question,serial=""){const res=await fetch(ADVISOR_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question,serial_number:serial||null,language:lang})});const data=await res.json();if(!res.ok)throw new Error(data.error||"Advisor request failed");return data}
-async function agentReply(){const input=document.getElementById("homeAgentInput");const question=input.value.trim();if(!question){toast(lang==="ar"?"اكتب سؤالك أولاً":"Type your question first");return}input.value="";goName("agent");document.getElementById("agentInput").value=question;await agentReplyFull()}
-async function agentReplyFull(){const input=document.getElementById("agentInput");const serial=document.getElementById("agentSerial").value.trim();const question=input.value.trim();const btn=document.getElementById("agentSendBtn");if(!question){toast(lang==="ar"?"اكتب سؤالك أولاً":"Type your question first");return}addAgentBubble(question,true);input.value="";btn.disabled=true;const loading=addAgentBubble(lang==="ar"?"جاري تحليل بيانات الجهاز...":"Analyzing device data...");try{const data=await requestAdvisor(question,serial);loading.innerHTML=escapeHTML(data.answer).replace(/\n/g,"<br>");const status=document.getElementById("agentDeviceStatus");status.textContent=data.device_found?(lang==="ar"?`تم العثور على الجهاز: ${data.device.item_name}`:`Device found: ${data.device.item_name}`):(lang==="ar"?"لم يتم العثور على جهاز؛ تم تقديم نصيحة عامة":"No device found; general advice provided");}catch(e){loading.textContent=lang==="ar"?"تعذر الاتصال بالمستشار حالياً.":"Could not connect to the advisor right now.";toast(e.message)}finally{btn.disabled=false}}
+const agentHistory=[];
+function addAgentBubble(text,isUser=false){
+ const chat=document.getElementById("agentChat");
+ const div=document.createElement("div");
+ div.className="bubble";
+ div.dir="auto";
+ if(isUser){div.style.marginLeft="auto";div.style.background="rgba(49,255,114,.12)"}
+ div.textContent=text||"";
+ chat.appendChild(div);
+ chat.scrollTop=chat.scrollHeight;
+ return div;
+}
+function parseSSEBlock(block){
+ let eventName="message";
+ const dataLines=[];
+ for(const line of block.split(/\r?\n/)){
+  if(line.startsWith("event:"))eventName=line.slice(6).trim();
+  else if(line.startsWith("data:"))dataLines.push(line.slice(5).trimStart());
+ }
+ if(!dataLines.length)return null;
+ try{return{event:eventName,data:JSON.parse(dataLines.join("\n"))}}
+ catch{return{event:eventName,data:{text:dataLines.join("\n")}}}
+}
+async function requestAdvisorStream(question,serial,onEvent){
+ const res=await fetch(ADVISOR_STREAM_URL,{
+  method:"POST",
+  headers:{"Content-Type":"application/json","Accept":"text/event-stream"},
+  body:JSON.stringify({question,serial_number:serial||null,language:lang,history:agentHistory.slice(-10)})
+ });
+ if(!res.ok){
+  let message="Advisor request failed";
+  try{const data=await res.json();message=data.error||message}catch{}
+  throw new Error(message);
+ }
+ if(!res.body)throw new Error("Streaming is not supported by this browser");
+ const reader=res.body.getReader();
+ const decoder=new TextDecoder("utf-8");
+ let buffer="";
+ while(true){
+  const{value,done}=await reader.read();
+  buffer+=decoder.decode(value||new Uint8Array(),{stream:!done});
+  const blocks=buffer.split(/\r?\n\r?\n/);
+  buffer=blocks.pop()||"";
+  for(const block of blocks){const parsed=parseSSEBlock(block);if(parsed)onEvent(parsed.event,parsed.data)}
+  if(done)break;
+ }
+ if(buffer.trim()){const parsed=parseSSEBlock(buffer);if(parsed)onEvent(parsed.event,parsed.data)}
+}
+async function agentReply(){
+ const input=document.getElementById("homeAgentInput");
+ const question=input.value.trim();
+ if(!question){toast(lang==="ar"?"اكتب سؤالك أولاً":"Type your question first");return}
+ input.value="";goName("agent");document.getElementById("agentInput").value=question;await agentReplyFull();
+}
+async function agentReplyFull(){
+ const input=document.getElementById("agentInput");
+ const serial=document.getElementById("agentSerial").value.trim();
+ const question=input.value.trim();
+ const btn=document.getElementById("agentSendBtn");
+ if(!question){toast(lang==="ar"?"اكتب سؤالك أولاً":"Type your question first");return}
+ addAgentBubble(question,true);
+ input.value="";
+ btn.disabled=true;
+ const answerBubble=addAgentBubble("");
+ answerBubble.classList.add("streaming");
+ let fullAnswer="";
+ let receivedMeta=false;
+ try{
+  await requestAdvisorStream(question,serial,(event,data)=>{
+   if(event==="meta"){
+    receivedMeta=true;
+    const status=document.getElementById("agentDeviceStatus");
+    status.textContent=data.device_found
+      ?(lang==="ar"?`تم العثور على الجهاز: ${data.device?.item_name||data.serial_number}`:`Device found: ${data.device?.item_name||data.serial_number}`)
+      :(serial?(lang==="ar"?"الجهاز غير موجود؛ سأجيب بحسب المعلومات المتاحة":"Device not found; answering from available information"):(lang==="ar"?"اسأل أي سؤال متعلق بالجهاز":"Ask any device-related question"));
+   }else if(event==="delta"){
+    fullAnswer+=data.text||"";
+    answerBubble.textContent=fullAnswer;
+    const chat=document.getElementById("agentChat");chat.scrollTop=chat.scrollHeight;
+   }else if(event==="error"){
+    throw new Error(data.error||"Streaming failed");
+   }
+  });
+  if(!fullAnswer)throw new Error(lang==="ar"?"لم يصل رد من المستشار":"No response received from advisor");
+  agentHistory.push({role:"user",content:question},{role:"assistant",content:fullAnswer});
+  while(agentHistory.length>20)agentHistory.shift();
+ }catch(e){
+  answerBubble.textContent=lang==="ar"?"تعذر الاتصال بالمستشار حالياً.":"Could not connect to the advisor right now.";
+  toast(e.message);
+ }finally{
+  answerBubble.classList.remove("streaming");
+  btn.disabled=false;
+  input.focus();
+ }
+}
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&document.activeElement?.id==="agentInput"){e.preventDefault();agentReplyFull()}if(e.key==="Enter"&&!e.shiftKey&&document.activeElement?.id==="homeAgentInput"){e.preventDefault();agentReply()}})
 function init(){if(localStorage.getItem("theme")==="light")document.body.classList.add("light");lang=localStorage.getItem("lang")||"en";document.getElementById("themeBtn").textContent=document.body.classList.contains("light")?"🌙":"☀️";setHero();renderDots();applyLang();setInterval(nextHero,6000)}
 init();
