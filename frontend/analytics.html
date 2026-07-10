@@ -1,0 +1,200 @@
+<!DOCTYPE html><html lang="en" dir="ltr"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analytics</title><link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/analytics.css"></head>
+<body data-page="analytics"><div class="container">
+<nav class="navbar">
+  <a class="brand" href="index.html"><span class="university-logo-wrap">
+  <img class="university-logo logo-dark" src="assets/university_logo_darkmode.png" alt="Birzeit University logo">
+  <img class="university-logo logo-light" src="assets/university_logo_lightmode.png" alt="Birzeit University logo">
+</span><span class="brand-name">Smart ITAD &amp; E-Waste</span></a>
+  <div class="nav-links">
+    <a href="index.html" data-page-link="home" data-i18n="home">Home</a>
+    <a href="scan.html" data-page-link="scan" data-i18n="scan">Scan & Analyze</a>
+    <a href="database.html" data-page-link="database" data-i18n="database">Database</a>
+    <a href="analytics.html" data-page-link="analytics" data-i18n="analytics">Analytics</a>
+    <a href="agent.html" data-page-link="agent" data-i18n="agent">AI Agent</a>
+  </div>
+  <div class="nav-actions">
+    <button class="icon-btn lang-btn" id="langBtn" onclick="toggleLanguage()" aria-label="Change language">عربي</button>
+    <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+    <button class="icon-btn mobile-toggle" onclick="toggleMobile()">☰</button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html" data-page-link="home" data-i18n="home">Home</a>
+  <a href="scan.html" data-page-link="scan" data-i18n="scan">Scan & Analyze</a>
+  <a href="database.html" data-page-link="database" data-i18n="database">Database</a>
+  <a href="analytics.html" data-page-link="analytics" data-i18n="analytics">Analytics</a>
+  <a href="agent.html" data-page-link="agent" data-i18n="agent">AI Agent</a>
+</div>
+</div>
+
+<main class="container page-shell analytics-page">
+  <div class="analytics-head">
+    <div>
+      <span class="section-kicker">SYSTEM INSIGHTS</span>
+      <h1>Analytics Dashboard</h1>
+      <p>Compact overview of asset decisions, device categories, and environmental impact.</p>
+    </div>
+    <div class="analytics-range">
+      <button class="active">Overview</button>
+      <button>Monthly</button>
+      <button>Annual</button>
+    </div>
+  </div>
+
+  <section class="analytics-kpis">
+    <article class="kpi-card">
+      <small>Total Devices</small>
+      <b>10,668</b>
+      <span>All registered assets</span>
+    </article>
+    <article class="kpi-card">
+      <small>E-Waste Devices</small>
+      <b>2,042</b>
+      <span>19.1% of total assets</span>
+    </article>
+    <article class="kpi-card">
+      <small>Average Current Value</small>
+      <b>$71.10</b>
+      <span>Across analyzed devices</span>
+    </article>
+    <article class="kpi-card">
+      <small>Model Accuracy</small>
+      <b>99.84%</b>
+      <span>Random Forest ITAD</span>
+    </article>
+  </section>
+
+  <section class="analytics-grid">
+    <article class="analytics-card chart-card">
+      <div class="analytics-card-head">
+        <div>
+          <span class="panel-kicker">ITAD DECISIONS</span>
+          <h2>Decision Distribution</h2>
+        </div>
+      </div>
+      <div class="bar-chart">
+        <div class="bar-item">
+          <div class="bar-label"><span>Review for E-Waste</span><b>7,377</b></div>
+          <div class="bar-track"><i style="width:69%"></i></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Recycle / Dispose</span><b>2,041</b></div>
+          <div class="bar-track"><i style="width:19%"></i></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Maintenance Check</span><b>729</b></div>
+          <div class="bar-track"><i style="width:7%"></i></div>
+        </div>
+        <div class="bar-item">
+          <div class="bar-label"><span>Keep in Use</span><b>520</b></div>
+          <div class="bar-track"><i style="width:5%"></i></div>
+        </div>
+      </div>
+    </article>
+
+    <article class="analytics-card donut-card">
+      <div class="analytics-card-head">
+        <div>
+          <span class="panel-kicker">DEVICE MIX</span>
+          <h2>Category Overview</h2>
+        </div>
+      </div>
+      <div class="donut-wrap">
+        <div class="donut"></div>
+        <div class="donut-center"><b>10,668</b><span>Devices</span></div>
+      </div>
+      <div class="legend">
+        <span><i class="c1"></i>Other 38%</span>
+        <span><i class="c2"></i>Computer 22%</span>
+        <span><i class="c3"></i>Display 19%</span>
+        <span><i class="c4"></i>HVAC 10%</span>
+      </div>
+    </article>
+
+    <article class="analytics-card impact-card-small">
+      <div class="analytics-card-head">
+        <div>
+          <span class="panel-kicker">ENVIRONMENTAL IMPACT</span>
+          <h2>Recovery Results</h2>
+        </div>
+      </div>
+      <div class="impact-metrics">
+        <div><small>CO₂ Saved</small><b>3,456 kg</b></div>
+        <div><small>Materials Recovered</small><b>2,789 kg</b></div>
+        <div><small>Hazardous Waste Handled</small><b>850 kg</b></div>
+      </div>
+    </article>
+
+    <article class="analytics-card trend-card">
+      <div class="analytics-card-head">
+        <div>
+          <span class="panel-kicker">TREND</span>
+          <h2>Monthly Processing</h2>
+        </div>
+      </div>
+      <div class="mini-line-chart">
+        <svg viewBox="0 0 500 180" preserveAspectRatio="none" aria-label="Monthly processing trend">
+          <defs>
+            <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#31ff72" stop-opacity=".35"/>
+              <stop offset="100%" stop-color="#31ff72" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path class="area" d="M0,145 C45,138 65,120 105,126 C150,132 165,92 210,98 C260,104 280,70 325,75 C370,80 405,45 500,52 L500,180 L0,180 Z"/>
+          <path class="line" d="M0,145 C45,138 65,120 105,126 C150,132 165,92 210,98 C260,104 280,70 325,75 C370,80 405,45 500,52"/>
+        </svg>
+        <div class="chart-months"><span>Jan</span><span>Mar</span><span>May</span><span>Jul</span><span>Sep</span><span>Nov</span></div>
+      </div>
+    </article>
+  </section>
+</main>
+
+<div class="mini-chat-launcher-wrap">
+  <button class="mini-chat-launcher" id="miniChatLauncher" type="button" onclick="toggleMiniChat()" aria-label="Open AI chat">
+    <span>AI</span>
+    <i></i>
+  </button>
+  <div class="mini-chat-panel" id="miniChatPanel" aria-hidden="true">
+    <div class="mini-chat-header">
+      <div class="mini-chat-title">
+        <div class="mini-chat-avatar">AI</div>
+        <div><b>E-Waste Advisor</b><small><i></i> Online</small></div>
+      </div>
+      <button type="button" onclick="toggleMiniChat()" aria-label="Close chat">×</button>
+    </div>
+    <div class="mini-chat-messages" id="miniChatMessages">
+      <div class="mini-msg ai">Hi! Ask a quick question about a device or e-waste decision.</div>
+    </div>
+    <div class="mini-chat-device">
+      <input id="miniSerial" placeholder="Serial number (optional)">
+    </div>
+    <div class="mini-chat-input">
+      <input id="miniQuestion" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMiniChat()">
+      <button type="button" onclick="sendMiniChat()">➤</button>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <strong>Smart E-Waste Management System</strong>
+      <span>Birzeit University</span>
+    </div>
+    <div class="footer-links">
+      <a href="about.html" data-page-link="about" data-i18n="about">About Us</a>
+      <a href="contact.html" data-page-link="contact" data-i18n="contact">Contact</a>
+    </div>
+  </div>
+</footer>
+
+
+
+
+<script src="js/app.js"></script>
+<script src="js/analytics.js"></script>
+<script src="js/mini-chat.js"></script>
+</body></html>

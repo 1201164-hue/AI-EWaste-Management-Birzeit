@@ -1,0 +1,185 @@
+<!DOCTYPE html><html lang="en" dir="ltr"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Advisor</title><link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/agent.css"></head>
+<body data-page="agent"><div class="container">
+<nav class="navbar">
+  <a class="brand" href="index.html"><span class="university-logo-wrap">
+  <img class="university-logo logo-dark" src="assets/university_logo_darkmode.png" alt="Birzeit University logo">
+  <img class="university-logo logo-light" src="assets/university_logo_lightmode.png" alt="Birzeit University logo">
+</span><span class="brand-name">Smart ITAD &amp; E-Waste</span></a>
+  <div class="nav-links">
+    <a href="index.html" data-page-link="home" data-i18n="home">Home</a>
+    <a href="scan.html" data-page-link="scan" data-i18n="scan">Scan & Analyze</a>
+    <a href="database.html" data-page-link="database" data-i18n="database">Database</a>
+    <a href="analytics.html" data-page-link="analytics" data-i18n="analytics">Analytics</a>
+    <a href="agent.html" data-page-link="agent" data-i18n="agent">AI Agent</a>
+  </div>
+  <div class="nav-actions">
+    <button class="icon-btn lang-btn" id="langBtn" onclick="toggleLanguage()" aria-label="Change language">عربي</button>
+    <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+    <button class="icon-btn mobile-toggle" onclick="toggleMobile()">☰</button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html" data-page-link="home" data-i18n="home">Home</a>
+  <a href="scan.html" data-page-link="scan" data-i18n="scan">Scan & Analyze</a>
+  <a href="database.html" data-page-link="database" data-i18n="database">Database</a>
+  <a href="analytics.html" data-page-link="analytics" data-i18n="analytics">Analytics</a>
+  <a href="agent.html" data-page-link="agent" data-i18n="agent">AI Agent</a>
+</div>
+</div>
+
+
+<main class="container page-shell agent-page-pro">
+  <div class="agent-hero-pro">
+    <div>
+      <span class="section-kicker">AI DEVICE SUPPORT</span>
+      <h1>Smart E-Waste Advisor</h1>
+      <p>Load a device, ask questions in English or Arabic, and get short, useful guidance about warranty, repair, resale, reusable parts, and recoverable materials.</p>
+    </div>
+    <div class="agent-hero-badge">
+      <span class="agent-status-dot"></span>
+      Live AI Support
+    </div>
+  </div>
+
+  <section class="agent-workspace-pro">
+    <aside class="agent-context-pro">
+      <div class="context-head-pro">
+        <div>
+          <span class="panel-kicker">DEVICE CONTEXT</span>
+          <h2>Choose a Device</h2>
+        </div>
+        <span class="panel-chip">Optional</span>
+      </div>
+
+      <div class="field-group">
+        <label for="serial">Serial Number</label>
+        <div class="serial-inline">
+          <input id="serial" placeholder="Enter serial number" autocomplete="off">
+          <button class="btn btn-secondary load-device-btn" type="button" onclick="loadAgentDevice()">Load</button>
+        </div>
+      </div>
+
+      <div class="device-preview-pro">
+        <div class="device-preview-icon">◉</div>
+        <div>
+          <small>Current selection</small>
+          <b id="deviceStatus">No device selected</b>
+          <span id="deviceMeta">General advice mode</span>
+        </div>
+      </div>
+
+      <div class="context-divider"></div>
+
+      <div class="quick-prompts-pro">
+        <span class="panel-kicker">QUICK QUESTIONS</span>
+        <button type="button" onclick="usePrompt('What is the best action for this device?')">
+          <span>01</span><div><b>Best action</b><small>Keep, repair, resell, or recycle</small></div>
+        </button>
+        <button type="button" onclick="usePrompt('Is this device still under warranty?')">
+          <span>02</span><div><b>Warranty status</b><small>Estimated warranty window</small></div>
+        </button>
+        <button type="button" onclick="usePrompt('Which parts can be reused or sold?')">
+          <span>03</span><div><b>Reusable parts</b><small>Components worth keeping or selling</small></div>
+        </button>
+        <button type="button" onclick="usePrompt('What valuable materials can be recovered?')">
+          <span>04</span><div><b>Valuable materials</b><small>Metals and circuit-board recovery</small></div>
+        </button>
+      </div>
+
+      <div class="advisor-note-pro">
+        <strong>Tip</strong>
+        <p>Load a device first for more accurate, record-based answers.</p>
+      </div>
+
+      <div class="status agent-side-status" id="agentStatus"></div>
+    </aside>
+
+    <section class="agent-chat-pro">
+      <div class="chat-topbar-pro">
+        <div class="chatbot-agent">
+          <div class="chatbot-avatar">AI</div>
+          <div>
+            <h2>E-Waste Advisor</h2>
+            <span><i></i> Ready to help</span>
+          </div>
+        </div>
+        <div class="chat-top-actions">
+          <button class="chat-clear-btn" type="button" onclick="clearChat()">Clear Chat</button>
+        </div>
+      </div>
+
+      <div class="chatbot-messages pro-messages" id="chat">
+        <div class="chat-message assistant">
+          <div class="message-avatar">AI</div>
+          <div class="message-bubble welcome-bubble">
+            <strong>Welcome to the Smart E-Waste Advisor.</strong>
+            <span>Ask about a device's warranty, value, repair decision, reusable parts, resale potential, or recyclable materials.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-suggestions-pro">
+        <button type="button" onclick="usePrompt('Give me a short summary of this device.')">Short summary</button>
+        <button type="button" onclick="usePrompt('Should this device be repaired or replaced?')">Repair or replace?</button>
+        <button type="button" onclick="usePrompt('What should be done before disposal?')">Before disposal</button>
+      </div>
+
+      <div class="chatbot-composer pro-composer">
+        <textarea id="question" rows="1" placeholder="Ask anything about the device..." onkeydown="handleComposerKey(event)"></textarea>
+        <button class="chat-send-btn" type="button" onclick="askAgent()" aria-label="Send message">➤</button>
+      </div>
+    </section>
+  </section>
+</main>
+
+<div class="mini-chat-launcher-wrap">
+  <button class="mini-chat-launcher" id="miniChatLauncher" type="button" onclick="toggleMiniChat()" aria-label="Open AI chat">
+    <span>AI</span>
+    <i></i>
+  </button>
+  <div class="mini-chat-panel" id="miniChatPanel" aria-hidden="true">
+    <div class="mini-chat-header">
+      <div class="mini-chat-title">
+        <div class="mini-chat-avatar">AI</div>
+        <div><b>E-Waste Advisor</b><small><i></i> Online</small></div>
+      </div>
+      <button type="button" onclick="toggleMiniChat()" aria-label="Close chat">×</button>
+    </div>
+    <div class="mini-chat-messages" id="miniChatMessages">
+      <div class="mini-msg ai">Hi! Ask a quick question about a device or e-waste decision.</div>
+    </div>
+    <div class="mini-chat-device">
+      <input id="miniSerial" placeholder="Serial number (optional)">
+    </div>
+    <div class="mini-chat-input">
+      <input id="miniQuestion" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMiniChat()">
+      <button type="button" onclick="sendMiniChat()">➤</button>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <strong>Smart E-Waste Management System</strong>
+      <span>Birzeit University</span>
+    </div>
+    <div class="footer-links">
+      <a href="about.html" data-page-link="about" data-i18n="about">About Us</a>
+      <a href="contact.html" data-page-link="contact" data-i18n="contact">Contact</a>
+    </div>
+  </div>
+</footer>
+
+
+
+
+
+
+<script src="js/app.js"></script>
+<script src="js/agent.js"></script>
+<script src="js/mini-chat.js"></script>
+</body></html>

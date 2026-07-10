@@ -1,0 +1,8 @@
+/* ===== Automatic wallpaper slideshow only ===== */
+.hero{
+  transition:background-image .8s ease-in-out, opacity .25s ease;
+}
+.slider-arrow,
+.dots{
+  display:none!important;
+}

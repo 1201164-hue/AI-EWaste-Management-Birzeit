@@ -1,0 +1,89 @@
+<!DOCTYPE html><html lang="en" dir="ltr"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Device Database</title><link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/database.css"></head>
+<body data-page="database"><div class="container">
+<nav class="navbar">
+  <a class="brand" href="index.html"><span class="university-logo-wrap">
+  <img class="university-logo logo-dark" src="assets/university_logo_darkmode.png" alt="Birzeit University logo">
+  <img class="university-logo logo-light" src="assets/university_logo_lightmode.png" alt="Birzeit University logo">
+</span><span class="brand-name">Smart ITAD &amp; E-Waste</span></a>
+  <div class="nav-links">
+    <a href="index.html" data-page-link="home" data-i18n="home">Home</a>
+    <a href="scan.html" data-page-link="scan" data-i18n="scan">Scan & Analyze</a>
+    <a href="database.html" data-page-link="database" data-i18n="database">Database</a>
+    <a href="analytics.html" data-page-link="analytics" data-i18n="analytics">Analytics</a>
+    <a href="agent.html" data-page-link="agent" data-i18n="agent">AI Agent</a>
+  </div>
+  <div class="nav-actions">
+    <button class="icon-btn lang-btn" id="langBtn" onclick="toggleLanguage()" aria-label="Change language">عربي</button>
+    <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+    <button class="icon-btn mobile-toggle" onclick="toggleMobile()">☰</button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html" data-page-link="home" data-i18n="home">Home</a>
+  <a href="scan.html" data-page-link="scan" data-i18n="scan">Scan & Analyze</a>
+  <a href="database.html" data-page-link="database" data-i18n="database">Database</a>
+  <a href="analytics.html" data-page-link="analytics" data-i18n="analytics">Analytics</a>
+  <a href="agent.html" data-page-link="agent" data-i18n="agent">AI Agent</a>
+</div>
+</div>
+<main class="container page-shell">
+<div class="page-head"><h1>Device Database</h1><p>Search and review asset records available to the Smart E-Waste system.</p></div>
+<section class="panel">
+<input id="search" placeholder="Search by serial number or device..." oninput="filterRows()">
+<div style="overflow:auto;margin-top:18px"><table><thead><tr><th>Serial</th><th>Device</th><th>Category</th><th>Age</th><th>Value</th><th>Decision</th></tr></thead>
+<tbody id="rows">
+<tr><td>EW000001</td><td>Dell Latitude 7480</td><td>Computer</td><td>7</td><td>$180</td><td>Review for E-Waste</td></tr>
+<tr><td>EW000002</td><td>iPhone 11 Pro</td><td>Phone</td><td>4</td><td>$350</td><td>Reuse / Resell</td></tr>
+<tr><td>EW000003</td><td>HP LaserJet Pro M404</td><td>Printer</td><td>8</td><td>$70</td><td>Recycle</td></tr>
+</tbody></table></div>
+</section></main>
+
+<div class="mini-chat-launcher-wrap">
+  <button class="mini-chat-launcher" id="miniChatLauncher" type="button" onclick="toggleMiniChat()" aria-label="Open AI chat">
+    <span>AI</span>
+    <i></i>
+  </button>
+  <div class="mini-chat-panel" id="miniChatPanel" aria-hidden="true">
+    <div class="mini-chat-header">
+      <div class="mini-chat-title">
+        <div class="mini-chat-avatar">AI</div>
+        <div><b>E-Waste Advisor</b><small><i></i> Online</small></div>
+      </div>
+      <button type="button" onclick="toggleMiniChat()" aria-label="Close chat">×</button>
+    </div>
+    <div class="mini-chat-messages" id="miniChatMessages">
+      <div class="mini-msg ai">Hi! Ask a quick question about a device or e-waste decision.</div>
+    </div>
+    <div class="mini-chat-device">
+      <input id="miniSerial" placeholder="Serial number (optional)">
+    </div>
+    <div class="mini-chat-input">
+      <input id="miniQuestion" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMiniChat()">
+      <button type="button" onclick="sendMiniChat()">➤</button>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <strong>Smart E-Waste Management System</strong>
+      <span>Birzeit University</span>
+    </div>
+    <div class="footer-links">
+      <a href="about.html" data-page-link="about" data-i18n="about">About Us</a>
+      <a href="contact.html" data-page-link="contact" data-i18n="contact">Contact</a>
+    </div>
+  </div>
+</footer>
+
+
+
+
+<script src="js/app.js"></script>
+<script src="js/database.js"></script>
+<script src="js/mini-chat.js"></script>
+</body></html>

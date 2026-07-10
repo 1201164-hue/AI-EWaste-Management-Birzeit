@@ -1,0 +1,104 @@
+<!DOCTYPE html><html lang="en" dir="ltr"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smart E-Waste</title><link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/home.css"></head>
+<body data-page="home"><div class="container">
+<nav class="navbar">
+  <a class="brand" href="index.html"><span class="university-logo-wrap">
+  <img class="university-logo logo-dark" src="assets/university_logo_darkmode.png" alt="Birzeit University logo">
+  <img class="university-logo logo-light" src="assets/university_logo_lightmode.png" alt="Birzeit University logo">
+</span><span class="brand-name">Smart ITAD &amp; E-Waste</span></a>
+  <div class="nav-links">
+    <a href="index.html" data-page-link="home" data-i18n="home">Home</a>
+    <a href="scan.html" data-page-link="scan" data-i18n="scan">Scan & Analyze</a>
+    <a href="database.html" data-page-link="database" data-i18n="database">Database</a>
+    <a href="analytics.html" data-page-link="analytics" data-i18n="analytics">Analytics</a>
+    <a href="agent.html" data-page-link="agent" data-i18n="agent">AI Agent</a>
+  </div>
+  <div class="nav-actions">
+    <button class="icon-btn lang-btn" id="langBtn" onclick="toggleLanguage()" aria-label="Change language">عربي</button>
+    <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+    <button class="icon-btn mobile-toggle" onclick="toggleMobile()">☰</button>
+  </div>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html" data-page-link="home" data-i18n="home">Home</a>
+  <a href="scan.html" data-page-link="scan" data-i18n="scan">Scan & Analyze</a>
+  <a href="database.html" data-page-link="database" data-i18n="database">Database</a>
+  <a href="analytics.html" data-page-link="analytics" data-i18n="analytics">Analytics</a>
+  <a href="agent.html" data-page-link="agent" data-i18n="agent">AI Agent</a>
+</div>
+</div>
+<div class="container">
+<section class="hero" id="hero">
+<div>
+    <h1><span data-i18n="heroTitle">Smarter Decisions</span><strong data-i18n="heroGreen">Greener Tomorrow</strong></h1>
+    <p data-i18n="heroText">AI-powered ITAD system for smart, sustainable and responsible e-waste management.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="scan.html" data-i18n="scanNow">Scan Device</a>
+      <a class="btn btn-secondary" href="agent.html" data-i18n="openAgent">Open AI Agent</a>
+    </div>
+  </div>
+  <div class="impact">
+    <h3 data-i18n="liveImpact">Live Impact</h3>
+    <div class="impact-row"><small data-i18n="devices">Devices Processed</small><b>1,248</b></div>
+    <div class="impact-row"><small data-i18n="co2">CO₂ Saved (kg)</small><b>3,456</b></div>
+    <div class="impact-row"><small data-i18n="materials">Materials Recovered (kg)</small><b>2,789</b></div>
+  </div>
+</section>
+<div class="quick">
+  <a class="card" href="scan.html"><h3 data-i18n="quickScan">Scan & Analyze</h3><p data-i18n="quickScanText">Analyze a device using serial number, age, price, and condition.</p></a>
+  <a class="card" href="database.html"><h3 data-i18n="quickDatabase">Device Database</h3><p data-i18n="quickDatabaseText">Search and review university assets.</p></a>
+  <a class="card" href="analytics.html"><h3 data-i18n="quickAnalytics">Analytics</h3><p data-i18n="quickAnalyticsText">View ITAD decisions and environmental impact.</p></a>
+  <a class="card" href="agent.html"><h3 data-i18n="quickAgent">AI Advisor</h3><p data-i18n="quickAgentText">Ask device-specific questions in real time.</p></a>
+</div>
+</div>
+
+
+<div class="mini-chat-launcher-wrap">
+  <button class="mini-chat-launcher" id="miniChatLauncher" type="button" onclick="toggleMiniChat()" aria-label="Open AI chat">
+    <span>AI</span>
+    <i></i>
+  </button>
+  <div class="mini-chat-panel" id="miniChatPanel" aria-hidden="true">
+    <div class="mini-chat-header">
+      <div class="mini-chat-title">
+        <div class="mini-chat-avatar">AI</div>
+        <div><b>E-Waste Advisor</b><small><i></i> Online</small></div>
+      </div>
+      <button type="button" onclick="toggleMiniChat()" aria-label="Close chat">×</button>
+    </div>
+    <div class="mini-chat-messages" id="miniChatMessages">
+      <div class="mini-msg ai">Hi! Ask a quick question about a device or e-waste decision.</div>
+    </div>
+    <div class="mini-chat-device">
+      <input id="miniSerial" placeholder="Serial number (optional)">
+    </div>
+    <div class="mini-chat-input">
+      <input id="miniQuestion" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMiniChat()">
+      <button type="button" onclick="sendMiniChat()">➤</button>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <strong>Smart E-Waste Management System</strong>
+      <span>Birzeit University</span>
+    </div>
+    <div class="footer-links">
+      <a href="about.html" data-page-link="about" data-i18n="about">About Us</a>
+      <a href="contact.html" data-page-link="contact" data-i18n="contact">Contact</a>
+    </div>
+  </div>
+</footer>
+
+
+
+
+
+<script src="js/app.js"></script>
+<script src="js/slider.js"></script>
+<script src="js/mini-chat.js"></script>
+</body></html>
