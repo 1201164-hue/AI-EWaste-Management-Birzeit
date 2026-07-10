@@ -1,8 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response, stream_with_context
 from flask_cors import CORS
 import pandas as pd
 import joblib
 import os
+import json
+import re
 from openai import OpenAI
 
 # ==========================
@@ -319,40 +321,119 @@ def build_rule_based_advice(question, device=None, language="en"):
     )
 
 
-def ask_openai_advisor(question, device=None, language="en"):
-    client = get_openai_client()
-    if client is None:
-        return build_rule_based_advice(question, device, language), False
+def detect_language(question, requested_language="auto"):
+    """Use the requested UI language, or detect Arabic from the question."""
+    requested = str(requested_language or "auto").lower().strip()
+    if requested.startswith("ar"):
+        return "ar"
+    if requested.startswith("en"):
+        return "en"
+    return "ar" if re.search(r"[\u0600-\u06FF]", str(question)) else "en"
 
+
+def build_advisor_prompts(question, device=None, language="en", history=None):
     device_context = "No matching device was supplied."
     if device:
         device_context = "\n".join(f"- {key}: {value}" for key, value in device.items())
 
-    system_prompt = """
-You are the Smart E-Waste ITAD Advisor for a university asset-management system.
-Use only the supplied device record and general e-waste knowledge. Never invent a database fact.
-Recommend one practical action: Keep in Use, Maintenance Check, Repair, Refurbish, Resell, Donate,
-Review for E-Waste, Recycle / Dispose, or Secure Disposal.
-Always mention secure data wiping before transfer, resale, donation, recycling, or disposal.
-Never recommend placing electronics, batteries, toner, refrigerants, or circuit boards in ordinary trash.
-Keep the response concise, professional, and actionable. Reply in Arabic when language is ar; otherwise reply in English.
-When a device is supplied, use these headings: Assessment, Recommended action, Reason, Required steps, Environmental note.
+    response_language = "Arabic" if language == "ar" else "English"
+    system_prompt = f"""
+You are the Smart E-Waste ITAD Device Advisor for a university asset-management system.
+Reply in {response_language}. You can answer any reasonable question related to the selected device, including:
+its database record, condition, lifecycle, likely maintenance needs, repair-versus-replace reasoning,
+ITAD decision, reuse, refurbishment, resale, donation, component recovery, secure data wiping,
+environmental impact, recycling, handling precautions, and explanations of the model result.
+
+Rules:
+- Use the supplied device record as the source of truth for device-specific facts.
+- Never invent specifications, faults, prices, dates, locations, or database values that are not supplied.
+- When the requested fact is missing, say clearly that it is not available in the record and explain what inspection or data would be needed.
+- Do not force every answer into a fixed recommendation format. Answer the user's actual question directly.
+- When a recommendation is requested, choose a practical action such as Keep in Use, Maintenance Check,
+  Repair, Refurbish, Resell, Donate, Review for E-Waste, Recycle / Dispose, or Secure Disposal.
+- Mention secure data wiping whenever the device may be transferred, sold, donated, recycled, or disposed of.
+- Never recommend putting electronics, batteries, toner, refrigerants, or circuit boards in ordinary trash.
+- Keep answers professional, clear, useful, and appropriately detailed.
 """.strip()
 
-    user_prompt = f"Language: {language}\nUser question: {question}\nDevice record:\n{device_context}"
+    messages = []
+    for item in (history or [])[-10:]:
+        if not isinstance(item, dict):
+            continue
+        role = str(item.get("role", "")).lower()
+        content = str(item.get("content", "")).strip()
+        if role in {"user", "assistant"} and content:
+            messages.append({"role": role, "content": content[:4000]})
 
+    messages.append({
+        "role": "user",
+        "content": f"Selected device record:\n{device_context}\n\nCurrent question:\n{question}",
+    })
+    return system_prompt, messages
+
+
+def ask_openai_advisor(question, device=None, language="en", history=None):
+    client = get_openai_client()
+    if client is None:
+        return build_rule_based_advice(question, device, language), False
+
+    system_prompt, messages = build_advisor_prompts(question, device, language, history)
     response = client.responses.create(
         model=OPENAI_MODEL,
         instructions=system_prompt,
-        input=user_prompt,
-        max_output_tokens=500,
+        input=messages,
+        max_output_tokens=900,
     )
 
     answer = getattr(response, "output_text", "") or ""
     if not answer.strip():
         return build_rule_based_advice(question, device, language), False
-
     return answer.strip(), True
+
+
+def sse_message(event_name, payload):
+    """Encode one Server-Sent Event frame."""
+    return f"event: {event_name}\ndata: {json.dumps(payload, ensure_ascii=False)}\n\n"
+
+
+def stream_openai_advisor(question, device=None, language="en", history=None):
+    """Yield OpenAI text deltas as SSE frames."""
+    client = get_openai_client()
+    if client is None:
+        fallback = build_rule_based_advice(question, device, language)
+        for chunk in re.findall(r".{1,24}(?:\s+|$)", fallback, flags=re.S):
+            yield sse_message("delta", {"text": chunk})
+        yield sse_message("done", {"ai_used": False})
+        return
+
+    system_prompt, messages = build_advisor_prompts(question, device, language, history)
+    stream = client.responses.create(
+        model=OPENAI_MODEL,
+        instructions=system_prompt,
+        input=messages,
+        max_output_tokens=900,
+        stream=True,
+    )
+
+    emitted = False
+    for event in stream:
+        event_type = getattr(event, "type", "")
+        if event_type == "response.output_text.delta":
+            delta = getattr(event, "delta", "") or ""
+            if delta:
+                emitted = True
+                yield sse_message("delta", {"text": delta})
+        elif event_type == "response.failed":
+            error = getattr(event, "error", None)
+            message = getattr(error, "message", None) or "OpenAI response failed"
+            raise RuntimeError(message)
+
+    if not emitted:
+        fallback = build_rule_based_advice(question, device, language)
+        yield sse_message("delta", {"text": fallback})
+        yield sse_message("done", {"ai_used": False})
+    else:
+        yield sse_message("done", {"ai_used": True})
 
 # ==========================
 # Routes
@@ -442,7 +523,8 @@ def advisor():
         data = request.get_json(silent=True) or {}
         question = str(data.get("question", "")).strip()
         serial_number = clean_serial(data.get("serial_number", ""))
-        language = str(data.get("language", "en")).lower()
+        language = detect_language(question, data.get("language", "auto"))
+        history = data.get("history", [])
 
         if not question:
             return jsonify({"error": "Question is required"}), 400
@@ -452,7 +534,7 @@ def advisor():
         device = find_device_record(serial_number) if serial_number else None
 
         try:
-            answer, ai_used = ask_openai_advisor(question, device, language)
+            answer, ai_used = ask_openai_advisor(question, device, language, history)
         except Exception as ai_error:
             app.logger.exception("OpenAI advisor failed: %s", ai_error)
             answer = build_rule_based_advice(question, device, language)
@@ -470,6 +552,47 @@ def advisor():
         app.logger.exception("Advisor endpoint failed: %s", e)
         return jsonify({"error": "The advisor is currently unavailable"}), 500
 
+
+
+@app.route("/advisor/stream", methods=["POST"])
+def advisor_stream():
+    """Stream advisor output as Server-Sent Events over a POST response."""
+    data = request.get_json(silent=True) or {}
+    question = str(data.get("question", "")).strip()
+    serial_number = clean_serial(data.get("serial_number", ""))
+    language = detect_language(question, data.get("language", "auto"))
+    history = data.get("history", [])
+
+    if not question:
+        return jsonify({"error": "Question is required"}), 400
+    if len(question) > 2000:
+        return jsonify({"error": "Question is too long"}), 400
+
+    device = find_device_record(serial_number) if serial_number else None
+
+    @stream_with_context
+    def generate():
+        yield sse_message("meta", {
+            "device_found": device is not None,
+            "device": device,
+            "serial_number": serial_number or None,
+            "language": language,
+        })
+        try:
+            yield from stream_openai_advisor(question, device, language, history)
+        except GeneratorExit:
+            return
+        except Exception as exc:
+            app.logger.exception("Streaming advisor failed: %s", exc)
+            fallback = build_rule_based_advice(question, device, language)
+            yield sse_message("delta", {"text": fallback})
+            yield sse_message("done", {"ai_used": False, "fallback": True})
+
+    response = Response(generate(), mimetype="text/event-stream")
+    response.headers["Cache-Control"] = "no-cache, no-transform"
+    response.headers["X-Accel-Buffering"] = "no"
+    response.headers["Connection"] = "keep-alive"
+    return response
 
 @app.route("/statistics", methods=["GET"])
 def statistics():
