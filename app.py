@@ -281,30 +281,20 @@ def find_device_record(serial_number):
 
 
 def build_rule_based_advice(question, device=None, language="en"):
-    """Return concise advice based only on the stored device record."""
     is_ar = str(language).lower().startswith("ar")
 
     if not device:
-        if is_ar:
-            return (
-                "لم يتم اختيار جهاز.
-"
-                "أدخل الرقم التسلسلي أولًا للحصول على قرار نموذج Random Forest "
-                "وتوصية مرتبطة ببيانات الجهاز."
-            )
-
         return (
-            "No device is selected.
-"
-            "Enter a serial number to get the Random Forest decision "
-            "and record-based advice."
+            "أدخل الرقم التسلسلي أولًا للحصول على قرار Random Forest."
+            if is_ar
+            else "Enter a serial number first to get the Random Forest decision."
         )
 
     item_name = str(device.get("item_name") or "Device")
     serial = str(device.get("serial_number") or "Unknown")
     category = str(device.get("item_category") or "other")
     status = str(device.get("status") or "Unknown")
-    rf_decision = str(device.get("itad_decision") or "Review for E-Waste")
+    decision = str(device.get("itad_decision") or "Review for E-Waste")
 
     age = float(device.get("item_age_years") or 0)
     current_value = float(device.get("current_value") or 0)
@@ -313,68 +303,79 @@ def build_rule_based_advice(question, device=None, language="en"):
     warranty_years = warranty_map.get(category, 2)
     warranty_active = age <= warranty_years
 
-    action_map = {
-        "Keep in Use": "Keep the device in service and continue routine maintenance.",
-        "Maintenance Check": "Inspect the device and confirm whether maintenance is economical.",
-        "Repair": "Repair the device only if the confirmed repair cost is reasonable.",
-        "Recycle / Dispose": (
-            "Perform secure data wiping, remove reusable parts, "
-            "and send the device to certified recycling."
-        ),
-        "Review for E-Waste": (
-            "Inspect the device before deciding between reuse, repair, "
-            "component harvesting, or recycling."
-        ),
+    actions = {
+        "Keep in Use":
+            "Keep the device in service and continue routine maintenance.",
+
+        "Maintenance Check":
+            "Inspect the device and confirm whether maintenance is economical.",
+
+        "Repair":
+            "Repair the device only if the confirmed repair cost is reasonable.",
+
+        "Recycle / Dispose":
+            "Wipe data securely, remove reusable parts, and send it to certified recycling.",
+
+        "Review for E-Waste":
+            "Inspect the device before choosing reuse, repair, parts harvesting, or recycling."
     }
-    next_action = action_map.get(
-        rf_decision,
-        "Inspect the device and follow the official ITAD procedure."
+
+    action = actions.get(
+        decision,
+        "Follow the official ITAD procedure for this device."
     )
 
-    component_data = component_analysis(category, status, age, repair_ratio)
-    reusable = ", ".join(component_data.get("reusable_parts", [])[:4]) or "Not available"
-    materials = ", ".join(component_data.get("recyclable_materials", [])[:5]) or "Not available"
+    components = component_analysis(
+        category,
+        status,
+        age,
+        repair_ratio
+    )
+
+    reusable_parts = ", ".join(
+        components.get("reusable_parts", [])[:4]
+    ) or "Not available"
+
+    materials = ", ".join(
+        components.get("recyclable_materials", [])[:5]
+    ) or "Not available"
 
     if is_ar:
-        warranty_text = "ساري تقديريًا" if warranty_active else "منتهي تقديريًا"
-        return (
-            f"قرار Random Forest: {rf_decision}
-"
-            f"الجهاز: {item_name} | الرقم التسلسلي: {serial}
-"
-            f"الحالة: {status} | العمر: {age:.1f} سنة | الضمان: {warranty_text}
-"
-            f"القيمة الحالية: {current_value:.2f} | نسبة الإصلاح: {repair_ratio:.2f}
-"
-            f"الإجراء المقترح: {next_action}
-"
-            f"أجزاء للفحص وإعادة الاستخدام: {reusable}
-"
-            f"مواد قابلة للاسترداد: {materials}
-"
-            "مهم: نفّذ مسحًا آمنًا للبيانات قبل البيع أو النقل أو التدوير."
+        warranty = (
+            "ساري تقديريًا"
+            if warranty_active
+            else "منتهي تقديريًا"
         )
 
-    warranty_text = "Estimated active" if warranty_active else "Estimated expired"
-    return (
-        f"Random Forest decision: {rf_decision}
-"
-        f"Device: {item_name} | Serial number: {serial}
-"
-        f"Status: {status} | Age: {age:.1f} years | Warranty: {warranty_text}
-"
-        f"Current value: {current_value:.2f} | Repair ratio: {repair_ratio:.2f}
-"
-        f"Recommended action: {next_action}
-"
-        f"Reusable parts to inspect: {reusable}
-"
-        f"Recoverable materials: {materials}
-"
-        "Important: perform secure data wiping before sale, transfer, or recycling."
+        return (
+            f"قرار Random Forest: {decision}\n"
+            f"الجهاز: {item_name}\n"
+            f"الرقم التسلسلي: {serial}\n"
+            f"الحالة: {status} | العمر: {age:.1f} سنة\n"
+            f"الضمان: {warranty}\n"
+            f"القيمة الحالية: {current_value:.2f} | نسبة الإصلاح: {repair_ratio:.2f}\n"
+            f"الإجراء: {action}\n"
+            f"أجزاء قابلة للفحص: {reusable_parts}\n"
+            f"مواد قابلة للاسترداد: {materials}"
+        )
+
+    warranty = (
+        "Estimated active"
+        if warranty_active
+        else "Estimated expired"
     )
 
-
+    return (
+        f"Random Forest decision: {decision}\n"
+        f"Device: {item_name}\n"
+        f"Serial number: {serial}\n"
+        f"Status: {status} | Age: {age:.1f} years\n"
+        f"Warranty: {warranty}\n"
+        f"Current value: {current_value:.2f} | Repair ratio: {repair_ratio:.2f}\n"
+        f"Recommended action: {action}\n"
+        f"Reusable parts to inspect: {reusable_parts}\n"
+        f"Recoverable materials: {materials}"
+    )
 def detect_language(question, requested_language="auto"):
     """Use the requested UI language, or detect Arabic from the question."""
     requested = str(requested_language or "auto").lower().strip()
