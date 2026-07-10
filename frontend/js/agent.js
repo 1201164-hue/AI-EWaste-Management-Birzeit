@@ -46,7 +46,6 @@ async function loadAgentDevice() {
     status.className = "status agent-side-status success";
   } catch (error) {
     selectedDevice = null;
-
     deviceStatus.textContent = "No device selected";
 
     if (deviceMeta) {
@@ -100,7 +99,7 @@ function clearChat() {
         <strong>Welcome to the Smart E-Waste Advisor.</strong>
         <span>
           Ask about the Random Forest decision, warranty, current value,
-          repair ratio, reusable parts, or recyclable materials.
+          repair ratio, reusable parts, or recoverable materials.
         </span>
       </div>
     </div>
@@ -108,6 +107,14 @@ function clearChat() {
 
   status.textContent = "";
   status.className = "status agent-side-status";
+}
+
+function cleanAdvisorText(value) {
+  return String(value || "")
+    .replace(/\*\*/g, "")
+    .replace(/^-\s*/gm, "")
+    .replace(/^\s*#+\s*/gm, "")
+    .trimStart();
 }
 
 async function askAgent() {
@@ -147,8 +154,7 @@ async function askAgent() {
         body: JSON.stringify({
           question: question,
           serial_number: serialInput.value.trim() || null,
-          language: getLang() === "ar" ? "ar" : "en",
-          device_context: selectedDevice || null
+          language: getLang() === "ar" ? "ar" : "en"
         })
       }
     );
@@ -158,6 +164,7 @@ async function askAgent() {
 
       try {
         const errorData = await response.json();
+
         if (errorData.error) {
           errorMessage = errorData.error;
         }
@@ -186,7 +193,10 @@ async function askAgent() {
         break;
       }
 
-      buffer += decoder.decode(result.value, { stream: true });
+      buffer += decoder.decode(
+        result.value,
+        { stream: true }
+      );
 
       const events = buffer.split("\n\n");
       buffer = events.pop() || "";
@@ -208,11 +218,18 @@ async function askAgent() {
         if (eventType === "delta" && eventData) {
           try {
             const parsedData = JSON.parse(eventData);
+
             completeText += parsedData.text || "";
-            assistantBubble.textContent = completeText;
+
+            assistantBubble.textContent =
+              cleanAdvisorText(completeText);
+
             scrollChat();
           } catch (error) {
-            console.warn("Could not parse advisor stream event:", eventData);
+            console.warn(
+              "Could not parse advisor stream event:",
+              eventData
+            );
           }
         }
       }
@@ -251,11 +268,12 @@ function appendMessage(role, text) {
 
   const avatar = document.createElement("div");
   avatar.className = "message-avatar";
-  avatar.textContent = role === "assistant" ? "AI" : "You";
+  avatar.textContent =
+    role === "assistant" ? "AI" : "You";
 
   const bubble = document.createElement("div");
   bubble.className = "message-bubble";
-  bubble.textContent = text;
+  bubble.textContent = cleanAdvisorText(text);
 
   if (role === "user") {
     wrapper.appendChild(bubble);
@@ -280,9 +298,13 @@ function scrollChat() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const questionInput = document.getElementById("question");
+  const questionInput =
+    document.getElementById("question");
 
   if (questionInput) {
-    questionInput.addEventListener("input", autoResizeComposer);
+    questionInput.addEventListener(
+      "input",
+      autoResizeComposer
+    );
   }
 });
