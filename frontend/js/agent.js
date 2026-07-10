@@ -1,189 +1,382 @@
-let selectedDevice=null;
-let activeStreamBubble=null;
+let selectedDevice = null;
+let activeStreamBubble = null;
 
-async function loadAgentDevice(){
-  const s=document.getElementById("serial").value.trim();
-  const status=document.getElementById("agentStatus");
+async function loadAgentDevice() {
+  const serialInput = document.getElementById("serial");
+  const status = document.getElementById("agentStatus");
+  const deviceStatus = document.getElementById("deviceStatus");
+  const deviceMeta = document.getElementById("deviceMeta");
 
-  if(!s){
-    status.textContent="Enter a serial number first.";
+  const serial = serialInput.value.trim();
+
+  if (!serial) {
+    status.textContent = "Enter a serial number first.";
+    status.className = "status agent-side-status error";
     return;
   }
 
-  status.textContent="Loading device...";
+  status.textContent = "Loading device...";
+  status.className = "status agent-side-status loading";
 
-  try{
-    const r=await fetch(`${API_BASE_URL}/device/${encodeURIComponent(s)}`);
-    const d=await r.json();
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/device/${encodeURIComponent(serial)}`
+    );
 
-    if(!r.ok){
-      throw new Error(d.error||"Device not found");
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Device not found");
     }
 
-    selectedDevice=d;
-    document.getElementById("deviceStatus").textContent=`${d.item_name||"Device"} • ${d.serial_number||s}`;
-    const meta=document.getElementById("deviceMeta");
-    if(meta) meta.textContent=`${d.item_category||"Unknown category"} • ${d.status||"Unknown status"}`;
-    status.textContent="Device loaded successfully.";
-  }catch(e){
-    status.textContent=e.message||"Could not load device.";
+    selectedDevice = data;
+
+    deviceStatus.textContent =
+      `${data.item_name || "Device"} • ${data.serial_number || serial}`;
+
+    if (deviceMeta) {
+      deviceMeta.textContent =
+        `${data.item_category || "Unknown category"} • ` +
+        `${data.status || "Unknown status"}`;
+    }
+
+    status.textContent = "Device loaded successfully.";
+    status.className = "status agent-side-status success";
+  } catch (error) {
+    selectedDevice = null;
+
+    deviceStatus.textContent = "No device selected";
+
+    if (deviceMeta) {
+      deviceMeta.textContent = "General advice mode";
+    }
+
+    status.textContent =
+      error.message || "Could not load device.";
+
+    status.className = "status agent-side-status error";
   }
 }
 
-function usePrompt(text){
-  const q=document.getElementById("question");
-  q.value=text;
-  q.focus();
+function usePrompt(text) {
+  const questionInput = document.getElementById("question");
+
+  questionInput.value = text;
+  questionInput.focus();
+
   autoResizeComposer();
 }
 
-function handleComposerKey(event){
-  if(event.key==="Enter"&&!event.shiftKey){
+function handleComposerKey(event) {
+  if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault();
     askAgent();
   }
+
   requestAnimationFrame(autoResizeComposer);
 }
 
-function autoResizeComposer(){
-  const q=document.getElementById("question");
-  q.style.height="auto";
-  q.style.height=Math.min(q.scrollHeight,110)+"px";
+function autoResizeComposer() {
+  const questionInput = document.getElementById("question");
+
+  if (!questionInput) {
+    return;
+  }
+
+  questionInput.style.height = "auto";
+  questionInput.style.height =
+    `${Math.min(questionInput.scrollHeight, 110)}px`;
 }
 
-function clearChat(){
-  document.getElementById("chat").innerHTML=`
+function clearChat() {
+  const chat = document.getElementById("chat");
+  const status = document.getElementById("agentStatus");
+
+  chat.innerHTML = `
     <div class="chat-message assistant">
       <div class="message-avatar">AI</div>
-      <div class="message-bubble">
-        Ask me about the device condition, warranty, repair, resale value, reusable parts, recyclable materials, or the recommended ITAD decision.
+
+      <div class="message-bubble welcome-bubble">
+        <strong>Welcome to the Smart E-Waste Advisor.</strong>
+
+        <span>
+          Ask about a device's warranty, value, repair decision,
+          reusable parts, resale potential, or recyclable materials.
+        </span>
       </div>
-    </div>`;
-  document.getElementById("agentStatus").textContent="";
+    </div>
+  `;
+
+  status.textContent = "";
+  status.className = "status agent-side-status";
 }
 
-async function askAgent(){
-  const questionInput=document.getElementById("question");
-  const q=questionInput.value.trim();
-  if(!q)return;
+async function askAgent() {
+  const questionInput = document.getElementById("question");
+  const status = document.getElementById("agentStatus");
+  const serialInput = document.getElementById("serial");
 
-  appendMessage("user",q);
-  questionInput.value="";
+  const question = questionInput.value.trim();
+
+  if (!question) {
+    return;
+  }
+
+  appendMessage("user", question);
+
+  questionInput.value = "";
   autoResizeComposer();
 
-  const assistantBubble=appendMessage("assistant","");
-  activeStreamBubble=assistantBubble;
+  const assistantBubble = appendMessage("assistant", "");
+
+  activeStreamBubble = assistantBubble;
+
   assistantBubble.classList.add("typing");
-  assistantBubble.textContent="Thinking...";
+  assistantBubble.textContent = "Thinking...";
 
-  const status=document.getElementById("agentStatus");
-  status.textContent="Generating response...";
+  status.textContent = "Generating response...";
+  status.className = "status agent-side-status loading";
 
-  try{
-    const r=await fetch(`${API_BASE_URL}/advisor/stream`,{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "Accept":"text/event-stream"
-      },
-      body:JSON.stringify({
-        question:q,
-        serial_number:document.getElementById("serial").value.trim()||null,
-        language:getLang()==="ar"?"ar":"en",
-        device_context:selectedDevice||null
-      })
-    });
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/advisor/stream`,
+      {
+        method: "POST",
 
-    if(!r.ok){
-      throw new Error(`Advisor error ${r.status}`);
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "text/event-stream"
+        },
+
+        body: JSON.stringify({
+          question: question,
+
+          serial_number:
+            serialInput.value.trim() || null,
+
+          language:
+            getLang() === "ar" ? "ar" : "en",
+
+          device_context:
+            selectedDevice || null
+        })
+      }
+    );
+
+    if (!response.ok) {
+      let errorMessage = `Advisor error ${response.status}`;
+
+      try {
+        const errorData = await response.json();
+
+        if (errorData.error) {
+          errorMessage = errorData.error;
+        }
+      } catch (error) {
+        // The response was not JSON.
+      }
+
+      throw new Error(errorMessage);
     }
 
-    const reader=r.body.getReader();
-    const decoder=new TextDecoder();
-    let buffer="";
-    let text="";
+    if (!response.body) {
+      throw new Error("Streaming is not supported by this browser.");
+    }
 
-    assistantBubble.textContent="";
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    let buffer = "";
+    let completeText = "";
+
+    assistantBubble.textContent = "";
     assistantBubble.classList.remove("typing");
 
-    while(true){
-      const {value,done}=await reader.read();
-      if(done)break;
+    while (true) {
+      const result = await reader.read();
 
-      buffer+=decoder.decode(value,{stream:true});
-      const events=buffer.split("
+      if (result.done) {
+        break;
+      }
 
-");
-      buffer=events.pop()||"";
+      buffer += decoder.decode(
+        result.value,
+        {
+          stream: true
+        }
+      );
 
-      for(const event of events){
-        let type="";
-        let data="";
+      /*
+       * Each Server-Sent Event ends with two newline characters.
+       * This was the broken part in the previous agent.js file.
+       */
+      const events = buffer.split("\n\n");
 
-        for(const line of event.split("
-")){
-          if(line.startsWith("event:")){
-            type=line.slice(6).trim();
+      buffer = events.pop() || "";
+
+      for (const event of events) {
+        let eventType = "";
+        let eventData = "";
+
+        /*
+         * Each line inside an SSE event is separated by one newline.
+         */
+        for (const line of event.split("\n")) {
+          if (line.startsWith("event:")) {
+            eventType = line.slice(6).trim();
           }
-          if(line.startsWith("data:")){
-            data+=line.slice(5).trim();
+
+          if (line.startsWith("data:")) {
+            eventData += line.slice(5).trim();
           }
         }
 
-        if(type==="delta"&&data){
-          try{
-            const obj=JSON.parse(data);
-            text+=obj.text||"";
-            assistantBubble.textContent=text;
+        if (eventType === "delta" && eventData) {
+          try {
+            const parsedData = JSON.parse(eventData);
+            const newText = parsedData.text || "";
+
+            completeText += newText;
+            assistantBubble.textContent = completeText;
+
             scrollChat();
-          }catch{}
+          } catch (error) {
+            console.warn(
+              "Could not parse advisor stream event:",
+              eventData
+            );
+          }
+        }
+
+        if (eventType === "error" && eventData) {
+          try {
+            const parsedError = JSON.parse(eventData);
+
+            throw new Error(
+              parsedError.error ||
+              parsedError.message ||
+              "The advisor returned an error."
+            );
+          } catch (error) {
+            if (error instanceof SyntaxError) {
+              throw new Error(eventData);
+            }
+
+            throw error;
+          }
         }
       }
     }
 
-    if(!text){
-      assistantBubble.textContent="No response was returned.";
+    /*
+     * Process any final text remaining in the buffer.
+     */
+    if (buffer.trim()) {
+      let eventType = "";
+      let eventData = "";
+
+      for (const line of buffer.split("\n")) {
+        if (line.startsWith("event:")) {
+          eventType = line.slice(6).trim();
+        }
+
+        if (line.startsWith("data:")) {
+          eventData += line.slice(5).trim();
+        }
+      }
+
+      if (eventType === "delta" && eventData) {
+        try {
+          const parsedData = JSON.parse(eventData);
+
+          completeText += parsedData.text || "";
+          assistantBubble.textContent = completeText;
+        } catch (error) {
+          console.warn(
+            "Could not parse final advisor event:",
+            eventData
+          );
+        }
+      }
     }
 
-    status.textContent="";
-  }catch(e){
+    if (!completeText.trim()) {
+      assistantBubble.textContent =
+        "No response was returned by the advisor.";
+    }
+
+    status.textContent = "";
+    status.className = "status agent-side-status";
+  } catch (error) {
+    console.error("AI advisor error:", error);
+
     assistantBubble.classList.remove("typing");
-    assistantBubble.textContent="Could not connect to the advisor right now.";
-    status.textContent=e.message||"Advisor connection failed.";
+
+    assistantBubble.textContent =
+      "Could not connect to the advisor right now.";
+
+    status.textContent =
+      error.message || "Advisor connection failed.";
+
+    status.className =
+      "status agent-side-status error";
+  } finally {
+    activeStreamBubble = null;
+    scrollChat();
   }
 }
 
-function appendMessage(role,text){
-  const chat=document.getElementById("chat");
-  const wrapper=document.createElement("div");
-  wrapper.className=`chat-message ${role}`;
+function appendMessage(role, text) {
+  const chat = document.getElementById("chat");
 
-  const avatar=document.createElement("div");
-  avatar.className="message-avatar";
-  avatar.textContent=role==="assistant"?"AI":"You";
+  const wrapper = document.createElement("div");
+  wrapper.className = `chat-message ${role}`;
 
-  const bubble=document.createElement("div");
-  bubble.className="message-bubble";
-  bubble.textContent=text;
+  const avatar = document.createElement("div");
+  avatar.className = "message-avatar";
+  avatar.textContent =
+    role === "assistant" ? "AI" : "You";
 
-  if(role==="user"){
+  const bubble = document.createElement("div");
+  bubble.className = "message-bubble";
+  bubble.textContent = text;
+
+  if (role === "user") {
     wrapper.appendChild(bubble);
     wrapper.appendChild(avatar);
-  }else{
+  } else {
     wrapper.appendChild(avatar);
     wrapper.appendChild(bubble);
   }
 
   chat.appendChild(wrapper);
+
   scrollChat();
+
   return bubble;
 }
 
-function scrollChat(){
-  const chat=document.getElementById("chat");
-  chat.scrollTop=chat.scrollHeight;
+function scrollChat() {
+  const chat = document.getElementById("chat");
+
+  if (!chat) {
+    return;
+  }
+
+  chat.scrollTop = chat.scrollHeight;
 }
 
-document.addEventListener("DOMContentLoaded",()=>{
-  document.getElementById("question")?.addEventListener("input",autoResizeComposer);
-});
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+    const questionInput =
+      document.getElementById("question");
+
+    if (questionInput) {
+      questionInput.addEventListener(
+        "input",
+        autoResizeComposer
+      );
+    }
+  }
+);
