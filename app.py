@@ -3,6 +3,7 @@ from flask_cors import CORS
 import pandas as pd
 import joblib
 import os
+from openai import OpenAI
 
 # ==========================
 # Load model files
@@ -222,6 +223,141 @@ def generate_explanation(prediction, category, age, default_life, warranty, repa
 
     return f"The device was categorized as {category}. The model predicted '{prediction}' because " + ", ".join(reasons) + "."
 
+
+# ==========================
+# AI Agent Advisor
+# ==========================
+
+AZURE_OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT", "").rstrip("/")
+AZURE_OPENAI_API_KEY = os.environ.get("AZURE_OPENAI_API_KEY", "")
+AZURE_OPENAI_DEPLOYMENT = os.environ.get("AZURE_OPENAI_DEPLOYMENT", "")
+
+
+def get_openai_client():
+    """Create an Azure OpenAI v1 client only when the required settings exist."""
+    if not (AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY and AZURE_OPENAI_DEPLOYMENT):
+        return None
+
+    return OpenAI(
+        api_key=AZURE_OPENAI_API_KEY,
+        base_url=f"{AZURE_OPENAI_ENDPOINT}/openai/v1/",
+    )
+
+
+def find_device_record(serial_number):
+    """Return one device as a JSON-safe dictionary, or None when it is not found."""
+    if not serial_number:
+        return None
+
+    df = load_dataset()
+    if df is None or "serial_lookup" not in df.columns:
+        return None
+
+    serial = clean_serial(serial_number)
+    row = df[df["serial_lookup"] == serial]
+    if row.empty:
+        return None
+
+    record = row.iloc[0]
+
+    def value(name, default=""):
+        result = record.get(name, default)
+        if pd.isna(result):
+            return default
+        return result
+
+    return {
+        "serial_number": clean_serial(value("serial_number")),
+        "item_name": str(value("item_name")),
+        "price": float(value("price", 0) or 0),
+        "item_age_years": float(value("item_age_years", 0) or 0),
+        "status": str(value("status")),
+        "item_category": str(value("item_category")),
+        "itad_decision": str(value("itad_decision")),
+        "current_value": float(value("current_value", 0) or 0),
+        "repair_cost_ratio": float(value("repair_cost_ratio", 0) or 0),
+        "building": str(value("building")),
+        "department": str(value("department")),
+        "room": str(value("room")),
+    }
+
+
+def build_rule_based_advice(question, device=None, language="en"):
+    """Safe fallback response when Azure OpenAI is not configured or unavailable."""
+    is_ar = str(language).lower().startswith("ar")
+
+    if device:
+        decision = device.get("itad_decision") or "Review for E-Waste"
+        age = device.get("item_age_years", 0)
+        status = device.get("status") or "Unknown"
+        serial = device.get("serial_number") or "Unknown"
+        item = device.get("item_name") or "Device"
+        ratio = device.get("repair_cost_ratio", 0)
+
+        if is_ar:
+            return (
+                f"تقييم الجهاز: {item}، الرقم التسلسلي {serial}.\n"
+                f"التوصية الحالية: {decision}.\n"
+                f"السبب: عمر الجهاز {age} سنة، حالته {status}، ونسبة تكلفة الإصلاح {ratio:.2f}.\n"
+                "الخطوات المطلوبة: انسخ البيانات المهمة، نفّذ مسحًا آمنًا للبيانات، افحص الأجزاء القابلة لإعادة الاستخدام، "
+                "ثم وجّه الجهاز إلى الإصلاح أو إعادة الاستخدام أو مركز تدوير معتمد حسب القرار."
+            )
+
+        return (
+            f"Device assessment: {item}, serial {serial}.\n"
+            f"Current recommendation: {decision}.\n"
+            f"Reason: the device is {age} years old, its status is {status}, and its repair-cost ratio is {ratio:.2f}.\n"
+            "Required steps: back up needed data, perform secure data wiping, inspect reusable components, "
+            "then send the device for repair, reuse, or certified recycling according to the recommendation."
+        )
+
+    if is_ar:
+        return (
+            "أستطيع مساعدتك في قرارات ITAD، إعادة الاستخدام، الإصلاح، التبرع، إعادة البيع، مسح البيانات، "
+            "والتدوير الآمن. أدخل الرقم التسلسلي للحصول على نصيحة مرتبطة ببيانات الجهاز."
+        )
+
+    return (
+        "I can advise on ITAD decisions, reuse, repair, donation, resale, secure data wiping, and certified recycling. "
+        "Add a serial number to receive advice grounded in the device database."
+    )
+
+
+def ask_azure_advisor(question, device=None, language="en"):
+    client = get_openai_client()
+    if client is None:
+        return build_rule_based_advice(question, device, language), False
+
+    device_context = "No matching device was supplied."
+    if device:
+        device_context = "\n".join(f"- {key}: {value}" for key, value in device.items())
+
+    system_prompt = """
+You are the Smart E-Waste ITAD Advisor for a university asset-management system.
+Use only the supplied device record and general e-waste knowledge. Never invent a database fact.
+Recommend one practical action: Keep in Use, Maintenance Check, Repair, Refurbish, Resell, Donate,
+Review for E-Waste, Recycle / Dispose, or Secure Disposal.
+Always mention secure data wiping before transfer, resale, donation, recycling, or disposal.
+Never recommend placing electronics, batteries, toner, refrigerants, or circuit boards in ordinary trash.
+Keep the response concise, professional, and actionable. Reply in Arabic when language is ar; otherwise reply in English.
+When a device is supplied, use these headings: Assessment, Recommended action, Reason, Required steps, Environmental note.
+""".strip()
+
+    user_prompt = f"Language: {language}\nUser question: {question}\nDevice record:\n{device_context}"
+
+    response = client.responses.create(
+        model=AZURE_OPENAI_DEPLOYMENT,
+        instructions=system_prompt,
+        input=user_prompt,
+        max_output_tokens=500,
+    )
+
+    answer = getattr(response, "output_text", "") or ""
+    if not answer.strip():
+        return build_rule_based_advice(question, device, language), False
+
+    return answer.strip(), True
+
 # ==========================
 # Routes
 # ==========================
@@ -301,6 +437,42 @@ def predict():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+
+@app.route("/advisor", methods=["POST"])
+def advisor():
+    try:
+        data = request.get_json(silent=True) or {}
+        question = str(data.get("question", "")).strip()
+        serial_number = clean_serial(data.get("serial_number", ""))
+        language = str(data.get("language", "en")).lower()
+
+        if not question:
+            return jsonify({"error": "Question is required"}), 400
+        if len(question) > 2000:
+            return jsonify({"error": "Question is too long"}), 400
+
+        device = find_device_record(serial_number) if serial_number else None
+
+        try:
+            answer, ai_used = ask_azure_advisor(question, device, language)
+        except Exception as ai_error:
+            app.logger.exception("Azure OpenAI advisor failed: %s", ai_error)
+            answer = build_rule_based_advice(question, device, language)
+            ai_used = False
+
+        return jsonify({
+            "answer": answer,
+            "device_found": device is not None,
+            "device": device,
+            "serial_number": serial_number or None,
+            "ai_used": ai_used,
+        })
+
+    except Exception as e:
+        app.logger.exception("Advisor endpoint failed: %s", e)
+        return jsonify({"error": "The advisor is currently unavailable"}), 500
 
 
 @app.route("/statistics", methods=["GET"])
