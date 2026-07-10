@@ -99,7 +99,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:14px;border-bottom:1px s
 </div>
 </section>
 
-<section id="scan" class="section"><div class="content page-grid"><div class="panel"><h3 data-i18n="scanAnalyze">Scan & Analyze Device</h3><div class="form-grid"><label id="serialLabel">Serial Number / Barcode</label><div style="display:grid;grid-template-columns:1fr auto;gap:10px"><input id="deviceSerial" type="text" placeholder="Enter serial number or scan barcode"><button class="secondary-btn" type="button" onclick="loadDeviceBySerial()" id="loadSerialBtn" style="padding:12px 18px">Load Device</button></div><small id="serialStatus" style="color:var(--muted);margin-top:-8px"></small><label data-i18n="deviceType">Device Type</label><select id="deviceType"></select><label data-i18n="age">Device Age (Years)</label><input type="number" id="deviceAge"><label data-i18n="price">Original Price ($)</label><input type="number" id="devicePrice"><label data-i18n="condition">Condition</label><select id="deviceCondition"></select><label data-i18n="photoUpload">Upload Device Photo</label><input type="file" id="photoInput" accept="image/*" onchange="previewPhoto()"><img id="photoPreview" style="display:none;width:100%;max-height:220px;object-fit:contain;border-radius:16px;border:1px solid var(--border);padding:8px"><button class="main-btn" onclick="analyzeDevice()" data-i18n="analyze">Analyze Device</button></div></div><div class="panel"><h3 data-i18n="predictionResult">Prediction Result</h3><div class="result-box"><div class="big-result" id="emptyResult"><div class="icon">🤖</div><h3 data-i18n="ready">Ready to analyze</h3><p data-i18n="readyText">Fill the device details and click Analyze Device.</p></div><div class="result-detail" id="resultDetail"><div id="resultPill" class="result-pill review">Review for E-Waste</div><div class="result-grid"><div class="info"><small data-i18n="currentValue">Estimated Current Value</small><b id="currentValue">$0.00</b></div><div class="info"><small data-i18n="repairRatio">Repair Cost Ratio</small><b id="repairRatio">0.00</b></div><div class="info"><small data-i18n="category">Detected Category</small><b id="category">-</b></div><div class="info"><small data-i18n="model">Model</small><b>Random Forest ITAD</b></div><div class="info explain"><small data-i18n="explanation">Explanation</small><b id="explanation">-</b></div></div></div></div></div></div></section>
+<section id="scan" class="section"><div class="content page-grid"><div class="panel"><h3 data-i18n="scanAnalyze">Scan & Analyze Device</h3><div class="form-grid"><label id="serialLabel">Serial Number / Barcode</label><div style="display:grid;grid-template-columns:1fr auto;gap:10px"><input id="deviceSerial" type="text" placeholder="Enter serial number or scan barcode"><button class="secondary-btn" type="button" onclick="loadDeviceBySerial()" id="loadSerialBtn" style="padding:12px 18px">Load Device</button></div><small id="serialStatus" style="color:var(--muted);margin-top:-8px"></small><label data-i18n="deviceType">Device Type</label><select id="deviceType"></select><label data-i18n="age">Device Age (Years)</label><input type="number" id="deviceAge"><label data-i18n="price">Original Price ($)</label><input type="number" id="devicePrice"><label data-i18n="condition">Condition</label><select id="deviceCondition"></select><label data-i18n="photoUpload">Upload Device Photo</label><input type="file" id="photoInput" accept="image/*" onchange="previewPhoto()"><img id="photoPreview" style="display:none;width:100%;max-height:220px;object-fit:contain;border-radius:16px;border:1px solid var(--border);padding:8px"><button class="main-btn" onclick="analyzeDevice()" data-i18n="analyze">Analyze Device</button></div></div><div class="panel"><h3 data-i18n="predictionResult">Prediction Result</h3><div class="result-box"><div class="big-result" id="emptyResult"><div class="icon">🤖</div><h3 data-i18n="ready">Ready to analyze</h3><p data-i18n="readyText">Fill the device details and click Analyze Device.</p></div><div class="result-detail" id="resultDetail"><div id="resultPill" class="result-pill review">Review for E-Waste</div><div class="result-grid"><div class="info"><small data-i18n="currentValue">Estimated Current Value</small><b id="currentValue">$0.00</b></div><div class="info"><small data-i18n="repairRatio">Repair Cost Ratio</small><b id="repairRatio">0.00</b></div><div class="info"><small data-i18n="category">Detected Category</small><b id="category">-</b></div><div class="info"><small data-i18n="model">Model</small><b>Random Forest ITAD</b></div><div class="info explain"><small data-i18n="explanation">Explanation</small><b id="explanation">-</b></div><div class="info explain"><small id="aiAdviceLabel">AI Agent Advice</small><div id="predictionAiAdvice" dir="auto" style="white-space:pre-wrap;line-height:1.75;font-weight:600">The AI advisor recommendation will appear here after analysis.</div></div></div></div></div></div></div></section>
 <section id="database" class="section"><div class="content"><div class="panel"><h3 data-i18n="database">Database</h3><input id="search" onkeyup="filterTable()"><table><thead><tr><th data-i18n="barcode">Barcode</th><th data-i18n="device">Device</th><th data-i18n="type">Type</th><th data-i18n="tableAge">Age</th><th data-i18n="tablePrice">Price</th><th data-i18n="decision">Decision</th></tr></thead><tbody id="dbTable"></tbody></table></div></div></section>
 <section id="analytics" class="section"><div class="content dashboard" style="grid-template-columns:repeat(3,1fr)"><div class="panel"><h3 data-i18n="totalDevices">Total Devices</h3><b style="font-size:3rem;color:var(--green)">12,540</b><p style="color:var(--green)" data-i18n="thisMonth">+15.2% this month</p></div><div class="panel"><h3 data-i18n="co2Saved">CO₂ Saved</h3><b style="font-size:3rem;color:var(--green)">6.2</b><p data-i18n="tons">tons</p></div><div class="panel"><h3 data-i18n="accuracyRate">Accuracy Rate</h3><b style="font-size:3rem;color:var(--green)">87.9%</b><p data-i18n="rfModel">Random Forest Model</p></div></div></section>
 <section id="agent" class="section"><div class="content page-grid"><div class="panel"><h3 data-i18n="agentAssistant">AI Agent Assistant</h3><label for="agentSerial">Serial Number / Barcode (optional)</label><input id="agentSerial" placeholder="Example: 1201164-hue" style="margin-bottom:14px"><div id="agentChat" class="ai-chat"><div class="bubble" data-i18n="agentAsk">Ask me about e-waste, device decisions, or project features.</div></div><div class="chat-input" style="margin-top:16px"><input id="agentInput" placeholder="Ask the AI advisor..."><button id="agentSendBtn" class="send-btn" onclick="agentReplyFull()">➤</button></div></div><div class="panel"><h3 data-i18n="agentSuggestions">Agent Suggestions</h3><p style="color:var(--muted);line-height:1.8" data-i18n="agentSuggestionsText">Try asking: Why recycle old printers? What does ITAD mean? How does the model decide?</p><div class="info" style="margin-top:18px"><small>Database-grounded advice</small><b id="agentDeviceStatus">No device selected</b></div></div></div></section>
@@ -191,7 +191,67 @@ async function loadDeviceBySerial(){
   toast(status.textContent);
  }
 }
-async function analyzeDevice(){let type=document.getElementById("deviceType").value,age=parseFloat(document.getElementById("deviceAge").value),price=parseFloat(document.getElementById("devicePrice").value),cond=document.getElementById("deviceCondition").value;if(!type||isNaN(age)||isNaN(price)||!cond){toast(lang==="ar"?"املأ جميع الحقول":"Fill all fields");return}let apiType=loadedDeviceItemName||apiMap[type]||type;document.getElementById("emptyResult").style.display="none";document.getElementById("resultDetail").classList.add("show");const pill=document.getElementById("resultPill");pill.textContent=lang==="ar"?"جاري التحليل...":"Analyzing...";try{const res=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({item_name:apiType,price:price,item_age_years:age,condition:cond})});const data=await res.json();const decision=data.prediction||"Unknown";pill.textContent=lang==="ar"?decisionArabic(decision):decision;pill.className="result-pill "+(decision==="Keep in Use"?"reuse":decision.includes("Review")?"review":"recycle");document.getElementById("currentValue").textContent="$"+Number(data.current_value||0).toFixed(2);document.getElementById("repairRatio").textContent=Number(data.repair_cost_ratio||0).toFixed(2);document.getElementById("category").textContent=data.item_category||apiType;document.getElementById("explanation").textContent=lang==="ar"?"حلل النموذج العمر والقيمة الحالية ومؤشرات الضمان ونسبة تكلفة الإصلاح لإنتاج قرار ITAD.":"AI model analyzed lifecycle, useful life, current value, warranty indicators and repair ratio to generate this ITAD decision.";recent.unshift({barcode:"EWNEW",deviceEn:apiType,deviceAr:type,typeEn:apiType,typeAr:type,age,price,decisionEn:decision,decisionAr:decisionArabic(decision)});recent=recent.slice(0,3);renderRecent()}catch(e){pill.textContent=lang==="ar"?"فشل الاتصال":"API Failed";toast(lang==="ar"?"فشل الاتصال بالواجهة":"API connection failed")}}
+async function analyzeDevice(){
+ const type=document.getElementById("deviceType").value;
+ const age=parseFloat(document.getElementById("deviceAge").value);
+ const price=parseFloat(document.getElementById("devicePrice").value);
+ const cond=document.getElementById("deviceCondition").value;
+ const serial=document.getElementById("deviceSerial").value.trim();
+ if(!type||isNaN(age)||isNaN(price)||!cond){toast(lang==="ar"?"املأ جميع الحقول":"Fill all fields");return}
+ const apiType=loadedDeviceItemName||apiMap[type]||type;
+ document.getElementById("emptyResult").style.display="none";
+ document.getElementById("resultDetail").classList.add("show");
+ const pill=document.getElementById("resultPill");
+ const adviceBox=document.getElementById("predictionAiAdvice");
+ document.getElementById("aiAdviceLabel").textContent=lang==="ar"?"نصيحة وكيل الذكاء الاصطناعي":"AI Agent Advice";
+ adviceBox.textContent=lang==="ar"?"جاري تجهيز نصيحة مخصصة للجهاز...":"Preparing personalized device advice...";
+ adviceBox.classList.add("streaming");
+ pill.textContent=lang==="ar"?"جاري التحليل...":"Analyzing...";
+ try{
+  const res=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({item_name:apiType,price:price,item_age_years:age,condition:cond})});
+  const data=await res.json();
+  if(!res.ok)throw new Error(data.error||"Prediction request failed");
+  const decision=data.prediction||"Unknown";
+  pill.textContent=lang==="ar"?decisionArabic(decision):decision;
+  pill.className="result-pill "+(decision==="Keep in Use"?"reuse":decision.includes("Review")?"review":"recycle");
+  document.getElementById("currentValue").textContent="$"+Number(data.current_value||0).toFixed(2);
+  document.getElementById("repairRatio").textContent=Number(data.repair_cost_ratio||0).toFixed(2);
+  document.getElementById("category").textContent=data.item_category||apiType;
+  document.getElementById("explanation").textContent=lang==="ar"?"حلل النموذج العمر والقيمة الحالية ومؤشرات الضمان ونسبة تكلفة الإصلاح لإنتاج قرار ITAD.":"AI model analyzed lifecycle, useful life, current value, warranty indicators and repair ratio to generate this ITAD decision.";
+
+  const advisorQuestion=lang==="ar"
+   ?`قدّم نصيحة مهنية ومختصرة لهذا الجهاز بناءً على نتيجة التحليل التالية. أجب بالعربية، واشرح القرار، وهل الأفضل إبقاؤه أو إصلاحه أو إعادة استخدام أجزائه أو إعادة تدويره، مع الخطوات المطلوبة وأي تنبيه أمني للبيانات.\nاسم الجهاز: ${apiType}\nالحالة: ${cond}\nالعمر: ${age} سنوات\nالسعر الأصلي: ${price} دولار\nقرار النموذج: ${decision}\nالثقة: ${data.confidence??"غير متاحة"}%\nالقيمة الحالية: ${Number(data.current_value||0).toFixed(2)} دولار\nنسبة تكلفة الإصلاح: ${Number(data.repair_cost_ratio||0).toFixed(2)}\nالعمر الافتراضي: ${data.default_life_years??"غير متاح"} سنوات\nخارج الضمان: ${data.out_of_warranty?"نعم":"لا"}\nتجاوز العمر الافتراضي: ${data.exceeded_life?"نعم":"لا"}`
+   :`Give concise professional advice for this device using the analysis below. Explain the decision, whether to keep, repair, harvest parts, resell, donate, or recycle it, and list the required next steps plus any data-security warning.\nDevice: ${apiType}\nCondition: ${cond}\nAge: ${age} years\nOriginal price: $${price}\nModel decision: ${decision}\nConfidence: ${data.confidence??"Unavailable"}%\nCurrent value: $${Number(data.current_value||0).toFixed(2)}\nRepair cost ratio: ${Number(data.repair_cost_ratio||0).toFixed(2)}\nExpected useful life: ${data.default_life_years??"Unavailable"} years\nOut of warranty: ${data.out_of_warranty?"Yes":"No"}\nExceeded useful life: ${data.exceeded_life?"Yes":"No"}`;
+
+  adviceBox.textContent="";
+  let fullAdvice="";
+  try{
+   await requestAdvisorStream(advisorQuestion,serial,(event,eventData)=>{
+    if(event==="delta"){
+     fullAdvice+=eventData.text||"";
+     adviceBox.textContent=fullAdvice;
+    }else if(event==="error"){
+     throw new Error(eventData.error||"Advisor streaming failed");
+    }
+   });
+   if(!fullAdvice)throw new Error("No advisor response");
+  }catch(advisorError){
+   adviceBox.textContent=lang==="ar"
+    ?`التوصية: ${decisionArabic(decision)}. ${data.explanation||"راجع حالة الجهاز وقيمته وتكلفة إصلاحه قبل اتخاذ القرار النهائي."}`
+    :`Recommendation: ${decision}. ${data.explanation||"Review the device condition, value, and repair cost before the final disposition decision."}`;
+   console.error("Prediction advisor error",advisorError);
+  }
+  recent.unshift({barcode:serial||"EWNEW",deviceEn:apiType,deviceAr:type,typeEn:apiType,typeAr:type,age,price,decisionEn:decision,decisionAr:decisionArabic(decision)});
+  recent=recent.slice(0,3);
+  renderRecent();
+ }catch(e){
+  pill.textContent=lang==="ar"?"فشل الاتصال":"API Failed";
+  adviceBox.textContent=lang==="ar"?"تعذر تحليل الجهاز حالياً.":"The device could not be analyzed right now.";
+  toast(lang==="ar"?"فشل الاتصال بالواجهة":"API connection failed");
+ }finally{
+  adviceBox.classList.remove("streaming");
+ }
+}
 function escapeHTML(value){const el=document.createElement("div");el.textContent=value??"";return el.innerHTML}
 const agentHistory=[];
 function addAgentBubble(text,isUser=false){
