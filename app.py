@@ -281,13 +281,21 @@ def find_device_record(serial_number):
 
 
 def build_rule_based_advice(question, device=None, language="en"):
+    """Return concise, useful advice based only on the stored device record."""
     is_ar = str(language).lower().startswith("ar")
 
     if not device:
+        if is_ar:
+            return (
+                "لم يتم اختيار جهاز.\n"
+                "أدخل الرقم التسلسلي للحصول على قرار نموذج Random Forest "
+                "ونصيحة مرتبطة ببيانات الجهاز."
+            )
+
         return (
-            "أدخل الرقم التسلسلي أولًا للحصول على قرار Random Forest."
-            if is_ar
-            else "Enter a serial number first to get the Random Forest decision."
+            "No device is selected.\n"
+            "Enter a serial number to get the Random Forest decision "
+            "and record-based advice."
         )
 
     item_name = str(device.get("item_name") or "Device")
@@ -304,20 +312,17 @@ def build_rule_based_advice(question, device=None, language="en"):
     warranty_active = age <= warranty_years
 
     actions = {
-        "Keep in Use":
-            "Keep the device in service and continue routine maintenance.",
-
-        "Maintenance Check":
-            "Inspect the device and confirm whether maintenance is economical.",
-
-        "Repair":
-            "Repair the device only if the confirmed repair cost is reasonable.",
-
-        "Recycle / Dispose":
-            "Wipe data securely, remove reusable parts, and send it to certified recycling.",
-
-        "Review for E-Waste":
-            "Inspect the device before choosing reuse, repair, parts harvesting, or recycling."
+        "Keep in Use": "Keep the device in service and continue routine maintenance.",
+        "Maintenance Check": "Inspect the device and confirm whether maintenance is economical.",
+        "Repair": "Repair the device only if the confirmed repair cost is reasonable.",
+        "Recycle / Dispose": (
+            "Perform secure data wiping, remove reusable parts, "
+            "and send the device to certified recycling."
+        ),
+        "Review for E-Waste": (
+            "Inspect the device before choosing reuse, repair, "
+            "component harvesting, or recycling."
+        ),
     }
 
     action = actions.get(
@@ -325,12 +330,7 @@ def build_rule_based_advice(question, device=None, language="en"):
         "Follow the official ITAD procedure for this device."
     )
 
-    components = component_analysis(
-        category,
-        status,
-        age,
-        repair_ratio
-    )
+    components = component_analysis(category, status, age, repair_ratio)
 
     reusable_parts = ", ".join(
         components.get("reusable_parts", [])[:4]
@@ -341,41 +341,37 @@ def build_rule_based_advice(question, device=None, language="en"):
     ) or "Not available"
 
     if is_ar:
-        warranty = (
-            "ساري تقديريًا"
-            if warranty_active
-            else "منتهي تقديريًا"
-        )
+        warranty_text = "ساري تقديريًا" if warranty_active else "منتهي تقديريًا"
 
         return (
             f"قرار Random Forest: {decision}\n"
             f"الجهاز: {item_name}\n"
             f"الرقم التسلسلي: {serial}\n"
             f"الحالة: {status} | العمر: {age:.1f} سنة\n"
-            f"الضمان: {warranty}\n"
+            f"الضمان: {warranty_text}\n"
             f"القيمة الحالية: {current_value:.2f} | نسبة الإصلاح: {repair_ratio:.2f}\n"
-            f"الإجراء: {action}\n"
+            f"الإجراء المقترح: {action}\n"
             f"أجزاء قابلة للفحص: {reusable_parts}\n"
-            f"مواد قابلة للاسترداد: {materials}"
+            f"مواد قابلة للاسترداد: {materials}\n"
+            "مهم: نفّذ مسحًا آمنًا للبيانات قبل البيع أو النقل أو التدوير."
         )
 
-    warranty = (
-        "Estimated active"
-        if warranty_active
-        else "Estimated expired"
-    )
+    warranty_text = "Estimated active" if warranty_active else "Estimated expired"
 
     return (
         f"Random Forest decision: {decision}\n"
         f"Device: {item_name}\n"
         f"Serial number: {serial}\n"
         f"Status: {status} | Age: {age:.1f} years\n"
-        f"Warranty: {warranty}\n"
+        f"Warranty: {warranty_text}\n"
         f"Current value: {current_value:.2f} | Repair ratio: {repair_ratio:.2f}\n"
         f"Recommended action: {action}\n"
         f"Reusable parts to inspect: {reusable_parts}\n"
-        f"Recoverable materials: {materials}"
+        f"Recoverable materials: {materials}\n"
+        "Important: perform secure data wiping before sale, transfer, or recycling."
     )
+
+
 def detect_language(question, requested_language="auto"):
     """Use the requested UI language, or detect Arabic from the question."""
     requested = str(requested_language or "auto").lower().strip()
@@ -389,79 +385,41 @@ def detect_language(question, requested_language="auto"):
 def build_advisor_prompts(question, device=None, language="en", history=None):
     device_context = "No matching device was supplied."
     if device:
-        device_context = "
-".join(f"- {key}: {value}" for key, value in device.items())
+        device_context = "\n".join(f"- {key}: {value}" for key, value in device.items())
 
     response_language = "Arabic" if language == "ar" else "English"
-
     system_prompt = f"""
-You are the Smart E-Waste ITAD Advisor.
-Reply in {response_language}.
+You are the Smart E-Waste ITAD Device Advisor for a university asset-management system.
+Reply in {response_language}. You can answer any reasonable question related to the selected device, including:
+its database record, condition, lifecycle, likely maintenance needs, repair-versus-replace reasoning,
+ITAD decision, reuse, refurbishment, resale, donation, component recovery, secure data wiping,
+environmental impact, recycling, handling precautions, and explanations of the model result.
 
-The device record contains the official result of a trained Random Forest model.
-The exact Random Forest prediction is stored in the field: itad_decision.
-
-Mandatory rules:
-1. Start every device-specific answer with:
-   Random Forest decision: <exact itad_decision value>
-   In Arabic use:
-   قرار Random Forest: <exact itad_decision value>
-
-2. Treat itad_decision as the official machine-learning result.
-   Do not replace it with your own decision.
-
-3. Never invent CPU, RAM, storage, GPU, warranty documents, faults,
-   repair prices, resale prices, specifications, dates, locations, or database values.
-
-4. Only mention facts available in the supplied device record.
-   When a fact is missing, say it is not available in the device record.
-
-5. Do not use Markdown.
-   Do not use asterisks, headings, tables, or decorative formatting.
-
-6. Keep the answer concise: no more than 8 short lines.
-
-7. Include useful information only:
-   - exact Random Forest decision,
-   - device name and serial number,
-   - status and age,
-   - estimated warranty status,
-   - current value and repair ratio,
-   - practical next action,
-   - reusable parts as inspection suggestions,
-   - recoverable materials,
-   - secure data wiping when applicable.
-
-8. Circuit boards may contain trace gold, silver, or palladium.
-   Never invent quantities or monetary values.
-
-9. Never recommend ordinary trash for electronics, batteries, toner,
-   refrigerants, or circuit boards.
+Rules:
+- Use the supplied device record as the source of truth for device-specific facts.
+- Never invent specifications, faults, prices, dates, locations, or database values that are not supplied.
+- When the requested fact is missing, say clearly that it is not available in the record and explain what inspection or data would be needed.
+- Do not force every answer into a fixed recommendation format. Answer the user's actual question directly.
+- When a recommendation is requested, choose a practical action such as Keep in Use, Maintenance Check,
+  Repair, Refurbish, Resell, Donate, Review for E-Waste, Recycle / Dispose, or Secure Disposal.
+- Mention secure data wiping whenever the device may be transferred, sold, donated, recycled, or disposed of.
+- Never recommend putting electronics, batteries, toner, refrigerants, or circuit boards in ordinary trash.
+- Keep answers professional, clear, useful, and appropriately detailed.
 """.strip()
 
     messages = []
-    for item in (history or [])[-6:]:
+    for item in (history or [])[-10:]:
         if not isinstance(item, dict):
             continue
-
         role = str(item.get("role", "")).lower()
         content = str(item.get("content", "")).strip()
-
         if role in {"user", "assistant"} and content:
-            messages.append({"role": role, "content": content[:2500]})
+            messages.append({"role": role, "content": content[:4000]})
 
     messages.append({
         "role": "user",
-        "content": (
-            f"Selected device record:
-{device_context}
-
-"
-            f"Current question:
-{question}"
-        ),
+        "content": f"Selected device record:\n{device_context}\n\nCurrent question:\n{question}",
     })
-
     return system_prompt, messages
 
 
@@ -621,17 +579,37 @@ def advisor():
 
         if not question:
             return jsonify({"error": "Question is required"}), 400
+
         if len(question) > 2000:
             return jsonify({"error": "Question is too long"}), 400
 
         device = find_device_record(serial_number) if serial_number else None
 
-        try:
-            answer, ai_used = ask_openai_advisor(question, device, language, history)
-        except Exception as ai_error:
-            app.logger.exception("OpenAI advisor failed: %s", ai_error)
+        if device:
             answer = build_rule_based_advice(question, device, language)
             ai_used = False
+            random_forest_used = True
+        else:
+            try:
+                answer, ai_used = ask_openai_advisor(
+                    question,
+                    device,
+                    language,
+                    history
+                )
+            except Exception as ai_error:
+                app.logger.exception(
+                    "OpenAI advisor failed: %s",
+                    ai_error
+                )
+                answer = build_rule_based_advice(
+                    question,
+                    device,
+                    language
+                )
+                ai_used = False
+
+            random_forest_used = False
 
         return jsonify({
             "answer": answer,
@@ -639,25 +617,32 @@ def advisor():
             "device": device,
             "serial_number": serial_number or None,
             "ai_used": ai_used,
+            "random_forest_used": random_forest_used,
         })
 
     except Exception as e:
         app.logger.exception("Advisor endpoint failed: %s", e)
-        return jsonify({"error": "The advisor is currently unavailable"}), 500
+        return jsonify({
+            "error": "The advisor is currently unavailable"
+        }), 500
 
 
 
 @app.route("/advisor/stream", methods=["POST"])
 def advisor_stream():
-    """Stream advisor output as Server-Sent Events over a POST response."""
+    """Stream concise Random Forest advice for known devices."""
     data = request.get_json(silent=True) or {}
     question = str(data.get("question", "")).strip()
     serial_number = clean_serial(data.get("serial_number", ""))
-    language = detect_language(question, data.get("language", "auto"))
+    language = detect_language(
+        question,
+        data.get("language", "auto")
+    )
     history = data.get("history", [])
 
     if not question:
         return jsonify({"error": "Question is required"}), 400
+
     if len(question) > 2000:
         return jsonify({"error": "Question is too long"}), 400
 
@@ -665,27 +650,86 @@ def advisor_stream():
 
     @stream_with_context
     def generate():
-        yield sse_message("meta", {
-            "device_found": device is not None,
-            "device": device,
-            "serial_number": serial_number or None,
-            "language": language,
-        })
+        yield sse_message(
+            "meta",
+            {
+                "device_found": device is not None,
+                "device": device,
+                "serial_number": serial_number or None,
+                "language": language,
+            }
+        )
+
         try:
-            yield from stream_openai_advisor(question, device, language, history)
+            if device:
+                answer = build_rule_based_advice(
+                    question,
+                    device,
+                    language
+                )
+
+                for chunk in re.findall(
+                    r".{1,40}(?:\s+|$)",
+                    answer,
+                    flags=re.S
+                ):
+                    yield sse_message(
+                        "delta",
+                        {"text": chunk}
+                    )
+
+                yield sse_message(
+                    "done",
+                    {
+                        "ai_used": False,
+                        "random_forest_used": True,
+                    }
+                )
+            else:
+                yield from stream_openai_advisor(
+                    question,
+                    device,
+                    language,
+                    history
+                )
+
         except GeneratorExit:
             return
-        except Exception as exc:
-            app.logger.exception("Streaming advisor failed: %s", exc)
-            fallback = build_rule_based_advice(question, device, language)
-            yield sse_message("delta", {"text": fallback})
-            yield sse_message("done", {"ai_used": False, "fallback": True})
 
-    response = Response(generate(), mimetype="text/event-stream")
+        except Exception as exc:
+            app.logger.exception(
+                "Streaming advisor failed: %s",
+                exc
+            )
+
+            fallback = build_rule_based_advice(
+                question,
+                device,
+                language
+            )
+
+            yield sse_message(
+                "delta",
+                {"text": fallback}
+            )
+
+            yield sse_message(
+                "done",
+                {
+                    "ai_used": False,
+                    "fallback": True,
+                }
+            )
+
+    response = Response(
+        generate(),
+        mimetype="text/event-stream"
+    )
     response.headers["Cache-Control"] = "no-cache, no-transform"
     response.headers["X-Accel-Buffering"] = "no"
     response.headers["Connection"] = "keep-alive"
     return response
+
 
 @app.route("/statistics", methods=["GET"])
 def statistics():
