@@ -281,43 +281,97 @@ def find_device_record(serial_number):
 
 
 def build_rule_based_advice(question, device=None, language="en"):
-    """Safe fallback response when OpenAI is not configured or unavailable."""
+    """Return concise advice based only on the stored device record."""
     is_ar = str(language).lower().startswith("ar")
 
-    if device:
-        decision = device.get("itad_decision") or "Review for E-Waste"
-        age = device.get("item_age_years", 0)
-        status = device.get("status") or "Unknown"
-        serial = device.get("serial_number") or "Unknown"
-        item = device.get("item_name") or "Device"
-        ratio = device.get("repair_cost_ratio", 0)
-
+    if not device:
         if is_ar:
             return (
-                f"تقييم الجهاز: {item}، الرقم التسلسلي {serial}.\n"
-                f"التوصية الحالية: {decision}.\n"
-                f"السبب: عمر الجهاز {age} سنة، حالته {status}، ونسبة تكلفة الإصلاح {ratio:.2f}.\n"
-                "الخطوات المطلوبة: انسخ البيانات المهمة، نفّذ مسحًا آمنًا للبيانات، افحص الأجزاء القابلة لإعادة الاستخدام، "
-                "ثم وجّه الجهاز إلى الإصلاح أو إعادة الاستخدام أو مركز تدوير معتمد حسب القرار."
+                "لم يتم اختيار جهاز.
+"
+                "أدخل الرقم التسلسلي أولًا للحصول على قرار نموذج Random Forest "
+                "وتوصية مرتبطة ببيانات الجهاز."
             )
 
         return (
-            f"Device assessment: {item}, serial {serial}.\n"
-            f"Current recommendation: {decision}.\n"
-            f"Reason: the device is {age} years old, its status is {status}, and its repair-cost ratio is {ratio:.2f}.\n"
-            "Required steps: back up needed data, perform secure data wiping, inspect reusable components, "
-            "then send the device for repair, reuse, or certified recycling according to the recommendation."
+            "No device is selected.
+"
+            "Enter a serial number to get the Random Forest decision "
+            "and record-based advice."
         )
+
+    item_name = str(device.get("item_name") or "Device")
+    serial = str(device.get("serial_number") or "Unknown")
+    category = str(device.get("item_category") or "other")
+    status = str(device.get("status") or "Unknown")
+    rf_decision = str(device.get("itad_decision") or "Review for E-Waste")
+
+    age = float(device.get("item_age_years") or 0)
+    current_value = float(device.get("current_value") or 0)
+    repair_ratio = float(device.get("repair_cost_ratio") or 0)
+
+    warranty_years = warranty_map.get(category, 2)
+    warranty_active = age <= warranty_years
+
+    action_map = {
+        "Keep in Use": "Keep the device in service and continue routine maintenance.",
+        "Maintenance Check": "Inspect the device and confirm whether maintenance is economical.",
+        "Repair": "Repair the device only if the confirmed repair cost is reasonable.",
+        "Recycle / Dispose": (
+            "Perform secure data wiping, remove reusable parts, "
+            "and send the device to certified recycling."
+        ),
+        "Review for E-Waste": (
+            "Inspect the device before deciding between reuse, repair, "
+            "component harvesting, or recycling."
+        ),
+    }
+    next_action = action_map.get(
+        rf_decision,
+        "Inspect the device and follow the official ITAD procedure."
+    )
+
+    component_data = component_analysis(category, status, age, repair_ratio)
+    reusable = ", ".join(component_data.get("reusable_parts", [])[:4]) or "Not available"
+    materials = ", ".join(component_data.get("recyclable_materials", [])[:5]) or "Not available"
 
     if is_ar:
+        warranty_text = "ساري تقديريًا" if warranty_active else "منتهي تقديريًا"
         return (
-            "أستطيع مساعدتك في قرارات ITAD، إعادة الاستخدام، الإصلاح، التبرع، إعادة البيع، مسح البيانات، "
-            "والتدوير الآمن. أدخل الرقم التسلسلي للحصول على نصيحة مرتبطة ببيانات الجهاز."
+            f"قرار Random Forest: {rf_decision}
+"
+            f"الجهاز: {item_name} | الرقم التسلسلي: {serial}
+"
+            f"الحالة: {status} | العمر: {age:.1f} سنة | الضمان: {warranty_text}
+"
+            f"القيمة الحالية: {current_value:.2f} | نسبة الإصلاح: {repair_ratio:.2f}
+"
+            f"الإجراء المقترح: {next_action}
+"
+            f"أجزاء للفحص وإعادة الاستخدام: {reusable}
+"
+            f"مواد قابلة للاسترداد: {materials}
+"
+            "مهم: نفّذ مسحًا آمنًا للبيانات قبل البيع أو النقل أو التدوير."
         )
 
+    warranty_text = "Estimated active" if warranty_active else "Estimated expired"
     return (
-        "I can advise on ITAD decisions, reuse, repair, donation, resale, secure data wiping, and certified recycling. "
-        "Add a serial number to receive advice grounded in the device database."
+        f"Random Forest decision: {rf_decision}
+"
+        f"Device: {item_name} | Serial number: {serial}
+"
+        f"Status: {status} | Age: {age:.1f} years | Warranty: {warranty_text}
+"
+        f"Current value: {current_value:.2f} | Repair ratio: {repair_ratio:.2f}
+"
+        f"Recommended action: {next_action}
+"
+        f"Reusable parts to inspect: {reusable}
+"
+        f"Recoverable materials: {materials}
+"
+        "Important: perform secure data wiping before sale, transfer, or recycling."
     )
 
 
@@ -334,41 +388,79 @@ def detect_language(question, requested_language="auto"):
 def build_advisor_prompts(question, device=None, language="en", history=None):
     device_context = "No matching device was supplied."
     if device:
-        device_context = "\n".join(f"- {key}: {value}" for key, value in device.items())
+        device_context = "
+".join(f"- {key}: {value}" for key, value in device.items())
 
     response_language = "Arabic" if language == "ar" else "English"
-    system_prompt = f"""
-You are the Smart E-Waste ITAD Device Advisor for a university asset-management system.
-Reply in {response_language}. You can answer any reasonable question related to the selected device, including:
-its database record, condition, lifecycle, likely maintenance needs, repair-versus-replace reasoning,
-ITAD decision, reuse, refurbishment, resale, donation, component recovery, secure data wiping,
-environmental impact, recycling, handling precautions, and explanations of the model result.
 
-Rules:
-- Use the supplied device record as the source of truth for device-specific facts.
-- Never invent specifications, faults, prices, dates, locations, or database values that are not supplied.
-- When the requested fact is missing, say clearly that it is not available in the record and explain what inspection or data would be needed.
-- Do not force every answer into a fixed recommendation format. Answer the user's actual question directly.
-- When a recommendation is requested, choose a practical action such as Keep in Use, Maintenance Check,
-  Repair, Refurbish, Resell, Donate, Review for E-Waste, Recycle / Dispose, or Secure Disposal.
-- Mention secure data wiping whenever the device may be transferred, sold, donated, recycled, or disposed of.
-- Never recommend putting electronics, batteries, toner, refrigerants, or circuit boards in ordinary trash.
-- Keep answers professional, clear, useful, and appropriately detailed.
+    system_prompt = f"""
+You are the Smart E-Waste ITAD Advisor.
+Reply in {response_language}.
+
+The device record contains the official result of a trained Random Forest model.
+The exact Random Forest prediction is stored in the field: itad_decision.
+
+Mandatory rules:
+1. Start every device-specific answer with:
+   Random Forest decision: <exact itad_decision value>
+   In Arabic use:
+   قرار Random Forest: <exact itad_decision value>
+
+2. Treat itad_decision as the official machine-learning result.
+   Do not replace it with your own decision.
+
+3. Never invent CPU, RAM, storage, GPU, warranty documents, faults,
+   repair prices, resale prices, specifications, dates, locations, or database values.
+
+4. Only mention facts available in the supplied device record.
+   When a fact is missing, say it is not available in the device record.
+
+5. Do not use Markdown.
+   Do not use asterisks, headings, tables, or decorative formatting.
+
+6. Keep the answer concise: no more than 8 short lines.
+
+7. Include useful information only:
+   - exact Random Forest decision,
+   - device name and serial number,
+   - status and age,
+   - estimated warranty status,
+   - current value and repair ratio,
+   - practical next action,
+   - reusable parts as inspection suggestions,
+   - recoverable materials,
+   - secure data wiping when applicable.
+
+8. Circuit boards may contain trace gold, silver, or palladium.
+   Never invent quantities or monetary values.
+
+9. Never recommend ordinary trash for electronics, batteries, toner,
+   refrigerants, or circuit boards.
 """.strip()
 
     messages = []
-    for item in (history or [])[-10:]:
+    for item in (history or [])[-6:]:
         if not isinstance(item, dict):
             continue
+
         role = str(item.get("role", "")).lower()
         content = str(item.get("content", "")).strip()
+
         if role in {"user", "assistant"} and content:
-            messages.append({"role": role, "content": content[:4000]})
+            messages.append({"role": role, "content": content[:2500]})
 
     messages.append({
         "role": "user",
-        "content": f"Selected device record:\n{device_context}\n\nCurrent question:\n{question}",
+        "content": (
+            f"Selected device record:
+{device_context}
+
+"
+            f"Current question:
+{question}"
+        ),
     })
+
     return system_prompt, messages
 
 
@@ -382,7 +474,7 @@ def ask_openai_advisor(question, device=None, language="en", history=None):
         model=OPENAI_MODEL,
         instructions=system_prompt,
         input=messages,
-        max_output_tokens=900,
+        max_output_tokens=280,
     )
 
     answer = getattr(response, "output_text", "") or ""
@@ -411,7 +503,7 @@ def stream_openai_advisor(question, device=None, language="en", history=None):
         model=OPENAI_MODEL,
         instructions=system_prompt,
         input=messages,
-        max_output_tokens=900,
+        max_output_tokens=280,
         stream=True,
     )
 
