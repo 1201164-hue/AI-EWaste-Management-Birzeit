@@ -1,7 +1,7 @@
-flask
-pandas
-scikit-learn
-joblib
-gunicorn
-flask-cors
-openai
+Flask>=3.0,<4
+flask-cors>=4.0,<7
+pandas>=2.0,<3
+joblib>=1.3,<2
+scikit-learn>=1.3,<2
+openai>=1.100,<3
+gunicorn>=22,<24
